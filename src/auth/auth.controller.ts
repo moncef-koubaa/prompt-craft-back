@@ -4,7 +4,7 @@ import { Public } from '../decorator/public.decorator';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { LoginUserDto } from 'src/user/dto/login-user.dto';
 import { AuthedUser } from 'src/decorator/authed-user.decorator.ts';
-import { User } from 'src/user/entity/user.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
