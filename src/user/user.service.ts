@@ -12,6 +12,7 @@ export class UserService {
 
   async create(user: Partial<User>): Promise<User> {
     user.balance = 0;
+    user.tokens = 0;
     user.emailVerified = false;
     user.roles = ['user'];
     const newUser = this.userRepository.create(user);

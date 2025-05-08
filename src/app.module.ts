@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { PlanModule } from './plan/plan.module';
 import { Plan } from './plan/entities/plan.entity';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { Plan } from './plan/entities/plan.entity';
       synchronize: true,
     }),
     PlanModule,
+    PaymentModule,
   ],
 })
 export class AppModule {}
