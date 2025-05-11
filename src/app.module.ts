@@ -10,6 +10,7 @@ import { LlmService } from "./llm/llm.service";
 import { LlmController } from "./llm/llm.controller";
 import { LlmModule } from "./llm/llm.module";
 import { HttpModule, HttpService } from "@nestjs/axios";
+import { AuctionModule } from './auction/auction.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { HttpModule, HttpService } from "@nestjs/axios";
     PlanModule,
     LlmModule,
     HttpModule,
+    AuctionModule,
   ],
   providers: [LlmService],
   controllers: [LlmController],
