@@ -10,11 +10,18 @@ import { LlmService } from "./llm/llm.service";
 import { LlmController } from "./llm/llm.controller";
 import { LlmModule } from "./llm/llm.module";
 import { HttpModule, HttpService } from "@nestjs/axios";
+import { ServeStaticModule } from "@nestjs/serve-static";
+import { join } from "path";
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     UserModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), "src", "assets", "generated_image"),
+      serveRoot: "/generated-images",
+    }),
+
     TypeOrmModule.forRoot({
       type: "postgres",
       host: process.env.DB_HOST,

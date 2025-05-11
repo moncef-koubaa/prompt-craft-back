@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+import base64
+from fastapi.responses import Response
+
 from app.llm_client  import generate_image as generate_image_client 
 import os
 
@@ -12,14 +15,13 @@ class ImageRequest(BaseModel):
 
 
 class ImageResponse(BaseModel):
-    image_url: str
+    image_bytes: str
 
 app = FastAPI()
 
 
 @app.post("/generate-image", response_model=ImageResponse)
 def generate_image(request: ImageRequest):
-    url = generate_image_client(request.prompt)
-
-    return {"image_url": url}
+    image_bytes = generate_image_client(request.prompt)
+    return Response(content=image_bytes, media_type="image/png")
     
