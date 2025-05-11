@@ -32,9 +32,8 @@ export class PaymentService {
         },
       ],
       mode: 'payment',
-      success_url:
-        'https://yourdomain.com/success?session_id={CHECKOUT_SESSION_ID}',
-      cancel_url: 'https://yourdomain.com/cancel',
+      success_url: `${process.env.BASE_URL}/success}`,
+      cancel_url: `${process.env.BASE_URL}/cancel`,
     });
 
     if (!session.url) {
@@ -42,5 +41,21 @@ export class PaymentService {
     }
 
     return session.url;
+  }
+
+  async handleWebhook(body: any, signature: string): Promise<void> {
+    const event = this.stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET ?? ''
+    );
+
+    switch (event.type) {
+      case 'checkout.session.completed':
+        const session = event.data.object as Stripe.Checkout.Session;
+        break;
+      default:
+        throw new BadRequestException('Unhandled event type');
+    }
   }
 }

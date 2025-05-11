@@ -1,4 +1,11 @@
-import { Controller, Param, ParseIntPipe, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Headers,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { AuthedUser } from 'src/decorator/authed-user.decorator.ts';
 import { User } from 'src/user/entities/user.entity';
@@ -13,5 +20,13 @@ export class PaymentController {
     @AuthedUser() user: User
   ): Promise<string> {
     return this.paymentService.buyPlan(planId, user);
+  }
+
+  @Post('webhook')
+  handleWebhook(
+    @Body() body: any,
+    @Headers('stripe-signature') signature: string
+  ): Promise<void> {
+    return this.paymentService.handleWebhook(body, signature);
   }
 }
