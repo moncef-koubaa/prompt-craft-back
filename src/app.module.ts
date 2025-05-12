@@ -6,13 +6,24 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { PlanModule } from './plan/plan.module';
 import { Plan } from './plan/entities/plan.entity';
+import { LlmService } from './llm/llm.service';
+import { LlmController } from './llm/llm.controller';
+import { LlmModule } from './llm/llm.module';
+import { HttpModule } from '@nestjs/axios';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { NotificationModule } from './notification/notiffication.module';
 import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
-    AuthModule,
     ConfigModule.forRoot(),
     UserModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'src', 'assets', 'generated_image'),
+      serveRoot: '/generated-images',
+    }),
+
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -24,7 +35,13 @@ import { PaymentModule } from './payment/payment.module';
       synchronize: true,
     }),
     PlanModule,
+    LlmModule,
+    HttpModule,
+    AuthModule,
+    NotificationModule,
     PaymentModule,
   ],
+  providers: [LlmService],
+  controllers: [LlmController],
 })
 export class AppModule {}

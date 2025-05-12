@@ -1,0 +1,9 @@
+fastapi
+fal-client
+requests
+Pillow
+transformers
+uvicorn[standard]
+pydantic
+requests
+uuid
