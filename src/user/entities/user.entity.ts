@@ -23,6 +23,9 @@ export class User {
   @Column()
   balance: number;
 
+  @Column({ default: 0 })
+  tokens: number;
+
   @Column('text', { array: true })
   roles: string[];
 }
