@@ -12,6 +12,7 @@ import { LlmModule } from "./llm/llm.module";
 import { HttpModule, HttpService } from "@nestjs/axios";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { join } from "path";
+import { NotificationModule } from "./notification/notiffication.module";
 
 @Module({
   imports: [
@@ -35,6 +36,8 @@ import { join } from "path";
     PlanModule,
     LlmModule,
     HttpModule,
+    AuthModule,
+    NotificationModule,
   ],
   providers: [LlmService],
   controllers: [LlmController],
