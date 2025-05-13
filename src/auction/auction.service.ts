@@ -28,7 +28,7 @@ export class AuctionService {
     async getAuction(auctionId: number) {
         const auction = await this.auctionRepo.findOne({
             where: { id: auctionId },
-            relations: ['bids'],
+            relations: ['bids', 'participants'],
         });
 
         return auction;
@@ -38,7 +38,7 @@ export class AuctionService {
     async getMyAuctions(userId: number) {
         const auctions = await this.auctionRepo.find({
             where: { ownerId: userId },
-            relations: ['bids'],
+            relations: ['bids', 'participants'],
         });
         return auctions;
     }
