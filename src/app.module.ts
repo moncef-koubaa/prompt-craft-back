@@ -11,6 +11,9 @@ import { LlmController } from "./llm/llm.controller";
 import { LlmModule } from "./llm/llm.module";
 import { HttpModule, HttpService } from "@nestjs/axios";
 import { AuctionModule } from './auction/auction.module';
+import { Auction } from "./auction/entities/auction.entity";
+import { Bid } from "./auction/entities/bid.entity";
+import { JoinAuction } from "./auction/entities/joinAuction.entity";
 
 @Module({
   imports: [
@@ -23,13 +26,14 @@ import { AuctionModule } from './auction/auction.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, Plan],
+      entities: [User, Plan, Auction, Bid, JoinAuction],
       synchronize: true,
     }),
     PlanModule,
     LlmModule,
     HttpModule,
     AuctionModule,
+    AuthModule,
   ],
   providers: [LlmService],
   controllers: [LlmController],

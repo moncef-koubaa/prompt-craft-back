@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Bid } from './bid.entity';
+import { JoinAuction } from './joinAuction.entity';
 
 @Entity()
 export class Auction {
@@ -7,7 +8,7 @@ export class Auction {
   id: number;
 
   @Column()
-  nftId: string; 
+  nftId: string;
 
   @Column()
   ownerId: number;
@@ -26,4 +27,7 @@ export class Auction {
 
   @OneToMany(() => Bid, bid => bid.auction)
   bids: Bid[];
+
+  @OneToMany(() => JoinAuction, participant => participant.auction)
+  participants: JoinAuction[];
 }

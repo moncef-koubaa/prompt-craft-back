@@ -9,7 +9,7 @@ export class Bid {
   @Column()
   bidderId: number;
 
-  @Column('decimal')
+  @Column()
   amount: number;
 
   @ManyToOne(() => Auction, auction => auction.bids)
