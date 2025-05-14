@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { JoinAuction } from 'src/auction/entities/joinAuction.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class User {
@@ -28,4 +29,7 @@ export class User {
 
   @Column('text', { array: true })
   roles: string[];
+
+  @OneToMany(() => JoinAuction, participant => participant.user)
+  auctionParticipations: JoinAuction[];
 }
