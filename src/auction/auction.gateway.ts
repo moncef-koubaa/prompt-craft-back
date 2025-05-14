@@ -13,7 +13,6 @@ import { JoinAuction } from './entities/joinAuction.entity';
 import { Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
 import { PlaceBidDto } from './dto/place-bid.dto';
-import { AuthedUser } from 'src/decorator/authed-user.decorator.ts';
 
 @Injectable()
 @WebSocketGateway({
@@ -30,11 +29,14 @@ export class AuctionGateway {
     private readonly auctionService: AuctionService,
     private readonly userService: UserService,
     @InjectRepository(JoinAuction)
-    private readonly joinAuctionRepo: Repository<JoinAuction>,
-  ) { }
+    private readonly joinAuctionRepo: Repository<JoinAuction>
+  ) {}
 
   @SubscribeMessage('joinAuction')
-  async handleJoin(@MessageBody() payload: { auctionId: number; userId: number }, @ConnectedSocket() client: Socket) {
+  async handleJoin(
+    @MessageBody() payload: { auctionId: number; userId: number },
+    @ConnectedSocket() client: Socket
+  ) {
     const data = typeof payload === 'string' ? JSON.parse(payload) : payload;
     //Validate the user and auction
     const user = await this.userService.findOneBy({ id: data.userId });
@@ -73,15 +75,16 @@ export class AuctionGateway {
       });
       client.join(`auction_${auction.id}`);
       console.log(`Client ${client.id} joined auction ${auction.id}`);
-    }
-    else {
+    } else {
       console.log('You have already joined this auction');
     }
-
   }
 
   @SubscribeMessage('leaveAuction')
-  async handleLeave(@MessageBody() payload: { auctionId: number; userId: number }, @ConnectedSocket() client: Socket) {
+  async handleLeave(
+    @MessageBody() payload: { auctionId: number; userId: number },
+    @ConnectedSocket() client: Socket
+  ) {
     const data = typeof payload === 'string' ? JSON.parse(payload) : payload;
     const user = await this.userService.findOneBy({ id: data.userId });
     const auction = await this.auctionService.getAuction(data.auctionId);
@@ -111,7 +114,10 @@ export class AuctionGateway {
   }
 
   @SubscribeMessage('placeBid')
-  async handlePlaceBid(@MessageBody() data: PlaceBidDto, @ConnectedSocket() client: Socket) {
+  async handlePlaceBid(
+    @MessageBody() data: PlaceBidDto,
+    @ConnectedSocket() client: Socket
+  ) {
     const user = await this.userService.findOneBy({ id: data.bidderId });
     const bid = await this.auctionService.placeBid(data);
     this.server.to(`auction_${data.auctionId}`).emit('newBid', bid);
