@@ -3,6 +3,8 @@ import { AuctionService } from './auction.service';
 import { CreateAuctionDto } from './dto/create-auction.dto';
 import { PlaceBidDto } from './dto/place-bid.dto';
 import { AuctionGateway } from './auction.gateway';
+import { AuthedUser } from 'src/decorator/authed-user.decorator.ts';
+import { User } from 'src/user/entities/user.entity';
 
 @Controller('auctions')
 export class AuctionController {
@@ -21,13 +23,13 @@ export class AuctionController {
   }
 
   // A user places a bid on an auction
-  @Post('place-bid')
-  async placeBidViaHttp(@Body() dto: PlaceBidDto) {
+  /* @Post('place-bid')
+  async placeBidViaHttp(@Body() dto: PlaceBidDto , @AuthedUser() user : User) {
     const bid = await this.auctionService.placeBid(dto);
 
     // Emit via gateway
     this.auctionGateway.server.to(`auction_${dto.auctionId}`).emit('newBid', bid);
 
     return bid;
-  }
+  } */
 }

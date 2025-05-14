@@ -12,9 +12,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { JoinAuction } from './entities/joinAuction.entity';
 import { Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
+import { PlaceBidDto } from './dto/place-bid.dto';
+import { AuthedUser } from 'src/decorator/authed-user.decorator.ts';
 
 @Injectable()
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+})
 export class AuctionGateway {
   @WebSocketServer()
   server: Server;
@@ -71,8 +78,6 @@ export class AuctionGateway {
       console.log('You have already joined this auction');
     }
 
-    
-
   }
 
   @SubscribeMessage('leaveAuction')
@@ -105,5 +110,10 @@ export class AuctionGateway {
     }
   }
 
-  
+  @SubscribeMessage('placeBid')
+  async handlePlaceBid(@MessageBody() data: PlaceBidDto, @ConnectedSocket() client: Socket) {
+    const user = await this.userService.findOneBy({ id: data.bidderId });
+    const bid = await this.auctionService.placeBid(data);
+    this.server.to(`auction_${data.auctionId}`).emit('newBid', bid);
+  }
 }

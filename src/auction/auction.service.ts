@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Auction } from './entities/auction.entity';
 import { Bid } from './entities/bid.entity';
@@ -43,12 +43,13 @@ export class AuctionService {
         return auctions;
     }
 
-    async placeBid(dto: PlaceBidDto) {
+    async placeBid(dtoJson: PlaceBidDto) {
 
         //Debugging
-        console.log('Placing bid:', dto);
+        console.log('Placing bid:', dtoJson);
+        const dto = typeof dtoJson === 'string' ? JSON.parse(dtoJson) : dtoJson;
         console.log('-----------------------------------');
-        console.log('Is instance of PlaceBidDto:', dto instanceof PlaceBidDto);
+        console.log('Data:', dto );
         console.log('-----------------------------------');
         console.log('Bidder ID:', dto.bidderId);
         console.log('Bid Amount:', dto.amount);
@@ -60,7 +61,7 @@ export class AuctionService {
         // Check if the auction exists and is not ended
         const auction = await this.auctionRepo.findOne({
             where: { id: dto.auctionId },
-            relations: ['bids'],
+            relations: ['bids', 'participants'],
         });
 
         if (!auction) throw new Error('Auction not found');
@@ -80,7 +81,7 @@ export class AuctionService {
 
         // Check if the bid is higher than the current highest bid
         const highest = auction.bids.sort((a, b) => b.amount - a.amount)[0];
-        if (highest && dto.amount <= highest.amount) throw new Error('Bid too low');
+        if (highest && dto.amount <= highest.amount) throw new BadRequestException('Bid too low');
 
         // Place the bid
         const bid = this.bidRepo.create({
@@ -97,7 +98,7 @@ export class AuctionService {
     async endAuction(id: number) {
         const auction = await this.auctionRepo.findOne({
             where: { id },
-            relations: ['bids'],
+            relations: ['bids', 'participants'],
         });
 
         if (auction) {
