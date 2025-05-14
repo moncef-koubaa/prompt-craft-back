@@ -6,7 +6,9 @@ export class LlmController {
 
   @Post("image-url")
   async getImageUrl(@Body() request) {
+    console.log("Received request:", request);
     const url = await this.llm.generateImageUrl(request.prompt);
+    console.log("Generated URL:", url);
     return { url };
   }
 }
