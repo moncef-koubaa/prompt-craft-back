@@ -8,9 +8,13 @@ import { AuctionGateway } from './auction.gateway';
 import { JoinAuction } from './entities/joinAuction.entity';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/entities/user.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Auction, Bid, JoinAuction, User])],
+  imports: [
+    TypeOrmModule.forFeature([Auction, Bid, JoinAuction, User]),
+    AuthModule,
+  ],
   controllers: [AuctionController],
   providers: [AuctionService, AuctionGateway, UserService],
 })

@@ -32,8 +32,8 @@ export class PaymentService {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.BASE_URL}/success}`,
-      cancel_url: `${process.env.BASE_URL}/cancel`,
+      success_url: `http://localhost/success`,
+      cancel_url: `http://localhost/cancel`,
     });
 
     if (!session.url) {
