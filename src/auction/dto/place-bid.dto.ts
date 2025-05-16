@@ -8,10 +8,6 @@ export class PlaceBidDto {
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  bidderId: number;
-
-  @Transform(({ value }) => Number(value))
-  @IsNumber()
   @Min(1)
   amount: number;
 }
