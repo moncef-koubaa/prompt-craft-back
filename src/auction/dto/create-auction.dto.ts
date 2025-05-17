@@ -13,5 +13,5 @@ export class CreateAuctionDto {
 
   @IsNumber()
   @Min(3600)
-  duration: number; 
+  duration: number;
 }
