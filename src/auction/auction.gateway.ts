@@ -9,14 +9,9 @@ import {
 import { Server, Socket } from 'socket.io';
 import { AuctionService } from './auction.service';
 import { Injectable, UseFilters, UseGuards } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { JoinAuction } from './entities/joinAuction.entity';
-import { Repository } from 'typeorm';
-import { UserService } from 'src/user/user.service';
 import { PlaceBidDto } from './dto/place-bid.dto';
 import { JwtWsGuard } from 'src/auth/guards/jwt-ws.guard';
 import { AuctionFilter } from './auction.filter';
-import { log } from 'console';
 import { AuthedUser } from 'src/decorator/authed-user.decorator.ts';
 import { User } from 'src/user/entities/user.entity';
 
@@ -33,12 +28,7 @@ export class AuctionGateway {
   @WebSocketServer()
   server: Server;
 
-  constructor(
-    private readonly auctionService: AuctionService,
-    private readonly userService: UserService,
-    @InjectRepository(JoinAuction)
-    private readonly joinAuctionRepo: Repository<JoinAuction>
-  ) {}
+  constructor(private readonly auctionService: AuctionService) {}
 
   @SubscribeMessage('joinAuction')
   async handleJoin(
@@ -46,57 +36,30 @@ export class AuctionGateway {
     @ConnectedSocket() client: Socket,
     @AuthedUser() user: User
   ) {
-    const auction = await this.auctionService.getAuction(auctionId);
-    if (!auction) {
-      throw new WsException('Auction not found');
+    const isParticipant = await this.auctionService.isParticipant(
+      auctionId,
+      user
+    );
+    if (!isParticipant) {
+      throw new WsException('You are not a participant of this auction');
     }
 
-    if (auction.ownerId === user.id) {
-      throw new WsException('You cannot join your own auction');
+    const rooms = client.rooms;
+    if (rooms.has(`auction_${auctionId}`)) {
+      throw new WsException('You are already in this auction');
     }
 
-    const existingJoin = await this.joinAuctionRepo.findOne({
-      where: {
-        user: { id: user.id },
-        auction: { id: auction.id },
-      },
-    });
-
-    if (!existingJoin) {
-      await this.joinAuctionRepo.save({
-        user,
-        auction,
-        socketId: client.id,
-      });
-      await client.join(`auction_${auctionId}`);
-    } else {
-      throw new WsException('You have already joined this auction');
-    }
+    await client.join(`auction_${auctionId}`);
   }
 
   @SubscribeMessage('leaveAuction')
   async handleLeave(
     @MessageBody() auctionId: number,
-    @ConnectedSocket() client: Socket,
-    @AuthedUser() user: User
+    @ConnectedSocket() client: Socket
   ) {
-    const auction = await this.auctionService.getAuction(auctionId);
-    if (!auction) {
-      throw new WsException('Auction not found');
-    }
-
-    const existingJoin = await this.joinAuctionRepo.findOne({
-      where: {
-        user: { id: user.id },
-        auction: { id: auction.id },
-      },
-    });
-
-    if (existingJoin) {
+    const rooms = client.rooms;
+    if (rooms.has(`auction_${auctionId}`)) {
       await client.leave(`auction_${auctionId}`);
-      await this.joinAuctionRepo.remove(existingJoin);
-    } else {
-      throw new WsException('You have not joined this auction');
     }
   }
 
@@ -106,7 +69,11 @@ export class AuctionGateway {
     @ConnectedSocket() client: Socket,
     @AuthedUser() user: User
   ) {
-    log(`auction_${data.auctionId}`);
+    const rooms = client.rooms;
+    if (!rooms.has(`auction_${data.auctionId}`)) {
+      throw new WsException('You are not in this auction');
+    }
+
     const bid = await this.auctionService.placeBid(data, user.id);
     this.server.to(`auction_${data.auctionId}`).emit('newBid', bid);
   }

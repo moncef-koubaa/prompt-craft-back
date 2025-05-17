@@ -1,4 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { log } from 'console';
 import { User } from 'src/user/entities/user.entity';
 
 export const AuthedUser = createParamDecorator(
@@ -12,9 +13,8 @@ export const AuthedUser = createParamDecorator(
       payload = request.user;
     }
     const user: User = {
-      id: payload.sub,
+      id: payload.id,
       username: payload.username,
-      email: payload.email,
       roles: payload.roles,
       emailVerified: payload.emailVerified,
     } as User;

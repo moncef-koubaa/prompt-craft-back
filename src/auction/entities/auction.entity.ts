@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Bid } from './bid.entity';
 import { JoinAuction } from './joinAuction.entity';
 
@@ -25,9 +31,9 @@ export class Auction {
   @CreateDateColumn()
   createdAt: Date;
 
-  @OneToMany(() => Bid, bid => bid.auction)
+  @OneToMany(() => Bid, (bid) => bid.auction)
   bids: Bid[];
 
-  @OneToMany(() => JoinAuction, participant => participant.auction)
+  @OneToMany(() => JoinAuction, (participant) => participant.auction)
   participants: JoinAuction[];
 }
