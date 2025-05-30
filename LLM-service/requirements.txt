@@ -7,3 +7,6 @@ uvicorn[standard]
 pydantic
 requests
 uuid
+langchain
+langchain-google-genai
+python-dotenv

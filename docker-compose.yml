@@ -56,6 +56,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
     ports:
       - "5674:5672"
       - "15672:15672"
