@@ -14,7 +14,7 @@ import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Auction, Bid, JoinAuction, User]),
+    TypeOrmModule.forFeature([Auction, Bid, JoinAuction, User, FrozenBalance]),
     AuthModule,
     UserModule,
   ],

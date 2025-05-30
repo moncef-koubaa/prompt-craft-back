@@ -14,6 +14,7 @@ import { JwtWsGuard } from 'src/auth/guards/jwt-ws.guard';
 import { AuctionFilter } from './auction.filter';
 import { AuthedUser } from 'src/decorator/authed-user.decorator.ts';
 import { User } from 'src/user/entities/user.entity';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 @UseGuards(JwtWsGuard)
@@ -76,5 +77,15 @@ export class AuctionGateway {
 
     const bid = await this.auctionService.placeBid(data, user.id);
     this.server.to(`auction_${data.auctionId}`).emit('newBid', bid);
+  }
+
+  @OnEvent('auction.ended')
+  async handleAuctionEnded(data: any) {
+    const { auctionId, winnerId, amount } = data;
+    this.server.to(`auction_${auctionId}`).emit('auctionEnded', {
+      auctionId,
+      winnerId,
+      amount,
+    });
   }
 }
