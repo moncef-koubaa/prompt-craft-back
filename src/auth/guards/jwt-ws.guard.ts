@@ -17,7 +17,12 @@ export class JwtWsGuard implements CanActivate {
 
     try {
       const payload = this.jwtService.verify(token);
-      client.user = payload;
+      client.user = {
+        id: payload.sub,
+        username: payload.username,
+        roles: payload.roles,
+        emailVerified: payload.emailVerified,
+      };
       return true;
     } catch (e) {
       throw new WsException('Invalid or expired token');

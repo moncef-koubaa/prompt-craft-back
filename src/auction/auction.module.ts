@@ -10,11 +10,21 @@ import { UserService } from "src/user/user.service";
 import { User } from "src/user/entities/user.entity";
 import { AuthModule } from "src/auth/auth.module";
 import { Nft } from "src/nft/entities/nft.entity";
+import { FrozenBalance } from "./entities/frozen-balance.entity";
+import { UserModule } from "src/user/user.module";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Auction, Bid, JoinAuction, User, Nft]),
+    TypeOrmModule.forFeature([
+      Auction,
+      Bid,
+      JoinAuction,
+      User,
+      Nft,
+      FrozenBalance,
+    ]),
     AuthModule,
+    UserModule,
   ],
   controllers: [AuctionController],
   providers: [AuctionService, AuctionGateway, UserService],

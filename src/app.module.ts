@@ -20,11 +20,15 @@ import { NotificationModule } from "./notification/notiffication.module";
 import { PaymentModule } from "./payment/payment.module";
 import { NftModule } from "./nft/nft.module";
 import { Nft } from "./nft/entities/nft.entity";
+import { ScheduleModule } from "@nestjs/schedule";
+import { EventEmitterModule } from "@nestjs/event-emitter";
+import { FrozenBalance } from "./auction/entities/frozen-balance.entity";
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    UserModule,
+    ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot(),
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), "src", "assets", "generated_image"),
       serveRoot: "/generated-images",
@@ -36,9 +40,10 @@ import { Nft } from "./nft/entities/nft.entity";
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, Plan, Auction, Bid, JoinAuction, Nft],
+      entities: [User, Plan, Auction, Bid, JoinAuction, Nft, FrozenBalance],
       synchronize: true,
     }),
+    UserModule,
     PlanModule,
     LlmModule,
     HttpModule,
