@@ -1,10 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Bid } from './bid.entity';
 import { JoinAuction } from './joinAuction.entity';
 
@@ -19,6 +13,12 @@ export class Auction {
   @Column()
   ownerId: number;
 
+  @Column()
+  winnerId: number;
+
+  @Column()
+  maxBidAmount: number;
+
   @Column('decimal')
   startingPrice: number;
 
@@ -28,8 +28,11 @@ export class Auction {
   @Column({ default: false })
   isEnded: boolean;
 
-  @CreateDateColumn()
+  @Column({ type: 'timestamp' })
   createdAt: Date;
+
+  @Column({ type: 'timestamp' })
+  endTime: Date;
 
   @OneToMany(() => Bid, (bid) => bid.auction)
   bids: Bid[];
