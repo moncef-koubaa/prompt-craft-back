@@ -109,12 +109,12 @@ export class AuctionService {
     }
 
     // NB: order is important here
-    this.userService.freazeBidAmount(auction, bidderId, dto.amount);
-    this.userService.unfreezeBidAmount(auction);
+    await this.userService.freazeBidAmount(auction, bidderId, dto.amount);
+    await this.userService.unfreezeBidAmount(auction);
 
     auction.winnerId = bidderId;
     auction.maxBidAmount = dto.amount;
-    this.auctionRepo.save(auction);
+    await this.auctionRepo.save(auction);
 
     const bid = this.bidRepo.create({
       auction,
