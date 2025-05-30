@@ -12,6 +12,7 @@ import { User } from 'src/user/entities/user.entity';
 import { Cron } from '@nestjs/schedule';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserService } from 'src/user/user.service';
+import { PriorityMutex } from './priority-mutex';
 
 @Injectable()
 export class AuctionService {
@@ -25,6 +26,15 @@ export class AuctionService {
     private readonly eventEmitter: EventEmitter2,
     private readonly userService: UserService
   ) {}
+
+  private auctionLocks: Map<number, PriorityMutex> = new Map();
+
+  private getLockForAuction(auctionId: number): PriorityMutex {
+    if (!this.auctionLocks.has(auctionId)) {
+      this.auctionLocks.set(auctionId, new PriorityMutex());
+    }
+    return this.auctionLocks.get(auctionId)!;
+  }
 
   async createAuction(dto: CreateAuctionDto) {
     // TODO: make with connected user check for onership and if already on auction change nft status
@@ -95,60 +105,66 @@ export class AuctionService {
   }
 
   async placeBid(dto: PlaceBidDto, bidderId: number) {
-    let auction = await this.auctionRepo.findOneBy({ id: dto.auctionId });
-    if (!auction) throw new WsException('Auction not found');
-    if (auction.isEnded) throw new WsException('Auction has ended');
+    const lock = this.getLockForAuction(dto.auctionId);
+    await lock.runExclusive(async () => {
+      let auction = await this.auctionRepo.findOneBy({ id: dto.auctionId });
+      if (!auction) throw new WsException('Auction not found');
+      if (auction.isEnded) throw new WsException('Auction has ended');
 
-    const userBalance = await this.userService.getBalance(bidderId);
-    if (userBalance < dto.amount) {
-      throw new WsException('Insufficient funds');
-    }
+      const userBalance = await this.userService.getBalance(bidderId);
+      if (userBalance < dto.amount) {
+        throw new WsException('Insufficient funds');
+      }
 
-    if (dto.amount < auction.maxBidAmount) {
-      throw new WsException('Bid amount is less than current highest bid');
-    }
+      if (dto.amount < auction.maxBidAmount) {
+        throw new WsException('Bid amount is less than current highest bid');
+      }
 
-    // NB: order is important here
-    await this.userService.freazeBidAmount(auction, bidderId, dto.amount);
-    await this.userService.unfreezeBidAmount(auction);
+      // NB: order is important here
+      await this.userService.freazeBidAmount(auction, bidderId, dto.amount);
+      await this.userService.unfreezeBidAmount(auction);
 
-    auction.winnerId = bidderId;
-    auction.maxBidAmount = dto.amount;
-    await this.auctionRepo.save(auction);
+      auction.winnerId = bidderId;
+      auction.maxBidAmount = dto.amount;
+      await this.auctionRepo.save(auction);
 
-    const bid = this.bidRepo.create({
-      auction,
-      bidderId,
-      amount: dto.amount,
-    });
+      const bid = this.bidRepo.create({
+        auction,
+        bidderId,
+        amount: dto.amount,
+      });
 
-    return await this.bidRepo.save(bid);
+      return await this.bidRepo.save(bid);
+    }, 1);
   }
 
   async endAuction(auction: Auction) {
-    auction.isEnded = true;
-    await this.auctionRepo.save(auction);
-
-    const highestBid = await this.bidRepo
-      .createQueryBuilder('bid')
-      .where('bid.auctionId = :auctionId', { auctionId: auction.id })
-      .orderBy('bid.amount', 'DESC')
-      .getOne();
-
-    if (highestBid) {
-      auction.winnerId = highestBid.bidderId;
+    const lock = this.getLockForAuction(auction.id);
+    await lock.runExclusive(async () => {
+      auction.isEnded = true;
       await this.auctionRepo.save(auction);
 
-      this.eventEmitter.emit('auction.ended', {
-        auctionId: auction.id,
-        winnerId: highestBid.bidderId,
-        amount: highestBid.amount,
-      });
+      const highestBid = await this.bidRepo
+        .createQueryBuilder('bid')
+        .where('bid.auctionId = :auctionId', { auctionId: auction.id })
+        .orderBy('bid.amount', 'DESC')
+        .getOne();
 
-      // transfer NFT ownership
+      if (highestBid) {
+        auction.winnerId = highestBid.bidderId;
+        await this.auctionRepo.save(auction);
 
-      // transfer money to the owner
-    }
+        this.eventEmitter.emit('auction.ended', {
+          auctionId: auction.id,
+          winnerId: highestBid.bidderId,
+          amount: highestBid.amount,
+        });
+
+        // transfer NFT ownership
+
+        // transfer money to the owner
+      }
+    }, 1000);
   }
 
   @Cron('*/5 * * * *')
