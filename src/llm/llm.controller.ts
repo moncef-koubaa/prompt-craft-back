@@ -1,7 +1,6 @@
 import { Controller, Post, Body } from "@nestjs/common";
 import { LlmService } from "./llm.service";
 import { Public } from "src/decorator/public.decorator";
-import { GetUser } from "src/decorator/get-user.decorator";
 @Controller("ai")
 export class LlmController {
   constructor(private readonly llmService: LlmService) {}

@@ -11,15 +11,17 @@ import { NftService } from "./nft.service";
 import { CreateNftDto } from "./dto/create-nft.dto";
 import { UpdateNftDto } from "./dto/update-nft.dto";
 import { Public } from "src/decorator/public.decorator";
+import { AuthedUser } from "src/decorator/authed-user.decorator.ts";
 
 @Controller("nft")
-@Public()
 export class NftController {
   constructor(private readonly nftService: NftService) {}
 
   @Post()
-  create(@Body() createNftDto: CreateNftDto) {
-    return this.nftService.create(createNftDto);
+  create(@Body() createNftDto: CreateNftDto, @AuthedUser() user) {
+    console.log("User creating NFT:", user);
+    console.log("Create NFT DTO:", createNftDto);
+    return this.nftService.create(createNftDto, user.id);
   }
 
   @Get()

@@ -1,3 +1,4 @@
+import { Transform } from "class-transformer";
 import {
   IsArray,
   IsBoolean,
@@ -9,30 +10,40 @@ import {
 export class CreateNftDto {
   @IsString()
   path: string;
+
   @IsNumber()
+  @IsOptional()
   ownerId: number;
+
   @IsNumber()
+  @IsOptional()
   creatorId: number;
+
   @IsString()
   @IsOptional()
-  promptGeneratedBy: string;
+  promptGeneratedBy: string = "";
+
+  @Transform(({ value }) => (value ? Number(value) : 0))
   @IsNumber()
   @IsOptional()
-  price: number;
+  price: number = 0;
+
   @IsString()
   name: string;
+
   @IsArray()
   @IsOptional()
   @IsNumber({}, { each: true })
-  auctionsIds: number[];
-  @IsArray()
-  @IsOptional()
-  @IsNumber({}, { each: true })
-  auctionIds: number[];
+  @Transform(({ value }) => (Array.isArray(value) ? value : []))
+  auctionIds: number[] = [];
+
   @IsBoolean()
   @IsOptional()
-  isOnAuction: boolean;
+  @Transform(({ value }) => (value !== undefined ? value : false))
+  isOnAuction: boolean = false;
+
   @IsBoolean()
   @IsOptional()
-  isOnSale: boolean;
+  @Transform(({ value }) => (value !== undefined ? value : false))
+  isOnSale: boolean = false;
 }

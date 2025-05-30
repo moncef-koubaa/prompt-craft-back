@@ -17,11 +17,16 @@ export class NftService {
     @InjectRepository(Auction)
     private readonly auctionRepository: Repository<Auction>
   ) {}
-  async create(createNftDto: CreateNftDto) {
-    const auctions = await this.auctionRepository
-      .createQueryBuilder("auction")
-      .where("auction.id IN (:...ids)", { ids: createNftDto.auctionIds })
-      .getMany();
+  async create(createNftDto: CreateNftDto, userId: number) {
+    createNftDto.ownerId = userId;
+    createNftDto.creatorId = userId;
+    let auctions: Auction[] = [];
+    if (!createNftDto.auctionIds || createNftDto.auctionIds.length > 0) {
+      auctions = await this.auctionRepository
+        .createQueryBuilder("auction")
+        .where("auction.id IN (:...ids)", { ids: createNftDto.auctionIds })
+        .getMany();
+    }
     const user = await this.userRepository
       .createQueryBuilder("user")
       .where("user.id = :id", { id: createNftDto.ownerId })
@@ -36,7 +41,7 @@ export class NftService {
       owner: user,
       creator: creator,
     } as DeepPartial<Nft>);
-    await this.nftRepository.save(nft);
+    return await this.nftRepository.save(nft);
   }
 
   async findAll() {
