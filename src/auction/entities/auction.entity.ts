@@ -1,6 +1,14 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Bid } from './bid.entity';
-import { JoinAuction } from './joinAuction.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from "typeorm";
+import { Bid } from "./bid.entity";
+import { JoinAuction } from "./joinAuction.entity";
+import { Nft } from "src/nft/entities/nft.entity";
 
 @Entity()
 export class Auction {
@@ -19,7 +27,7 @@ export class Auction {
   @Column({ nullable: true })
   maxBidAmount: number;
 
-  @Column('decimal')
+  @Column("decimal")
   startingPrice: number;
 
   @Column()
@@ -28,10 +36,11 @@ export class Auction {
   @Column({ default: false })
   isEnded: boolean;
 
-  @Column({ type: 'timestamp' })
+  @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ type: 'timestamp' })
+  @OneToMany(() => Bid, (bid) => bid.auction)
+  @Column({ type: "timestamp" })
   endTime: Date;
 
   @OneToMany(() => Bid, (bid) => bid.auction)
@@ -39,4 +48,7 @@ export class Auction {
 
   @OneToMany(() => JoinAuction, (participant) => participant.auction)
   participants: JoinAuction[];
+
+  @ManyToOne(() => Nft, (nft) => nft.auctions)
+  nft: Nft;
 }
