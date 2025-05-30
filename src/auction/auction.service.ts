@@ -107,12 +107,12 @@ export class AuctionService {
       throw new WsException('Bid amount is less than current highest bid');
     }
 
+    this.userService.freazeBidAmount(auction, bidderId, dto.amount);
+    this.userService.unfreezeBidAmount(auction);
+
     auction.winnerId = bidderId;
     auction.maxBidAmount = dto.amount;
     this.auctionRepo.save(auction);
-
-    this.userService.freazeBidAmount(auction, bidderId, dto.amount);
-    this.userService.unfreezeBidAmount(auction);
 
     const bid = this.bidRepo.create({
       auction,
