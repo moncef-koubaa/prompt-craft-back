@@ -76,6 +76,7 @@ export class AuctionService {
       .where('auction.id = :auctionId', { auctionId })
       .getOne();
     if (!auction) return false;
+    if (auction.isEnded) throw new WsException('Auction has ended');
 
     log('praticipant:', auction.participants);
     const participant = auction.participants.find(
@@ -107,6 +108,7 @@ export class AuctionService {
       throw new WsException('Bid amount is less than current highest bid');
     }
 
+    // NB: order is important here
     this.userService.freazeBidAmount(auction, bidderId, dto.amount);
     this.userService.unfreezeBidAmount(auction);
 

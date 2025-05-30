@@ -13,10 +13,10 @@ export class Auction {
   @Column()
   ownerId: number;
 
-  @Column()
+  @Column({ nullable: true })
   winnerId: number;
 
-  @Column()
+  @Column({ nullable: true })
   maxBidAmount: number;
 
   @Column('decimal')
