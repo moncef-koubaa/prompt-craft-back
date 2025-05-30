@@ -21,8 +21,6 @@ services:
       - "5051:80"
     depends_on:
       - db
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
   
   nestjs_app:
     build:
@@ -36,7 +34,7 @@ services:
       - '3000:3000'
     volumes:
       - .:/app:z
-      - /app/node_modules
+      # - /app/node_modules
     command: npm run start:dev
     depends_on:
       - db
@@ -65,4 +63,3 @@ services:
 
 volumes:
   pgdata:
-  pgadmin_data:
