@@ -7,17 +7,17 @@ export class UpdateNftDto {
     @IsNumber()
     id: number;
 
-    @Field({ nullable: true })
+    @Field(() => String, { nullable: true })
     @IsString()
     @IsOptional()
     name?: string;
 
-    @Field({ nullable: true })
+    @Field(() => String, { nullable: true })
     @IsString()
     @IsOptional()
     description?: string;
 
-    @Field({ nullable: true })
+    @Field(() => String, { nullable: true })
     @IsString()
     @IsOptional()
     imageUrl?: string;

@@ -8,18 +8,18 @@ import {
 } from "class-validator";
 import { InputType, Field, Int } from '@nestjs/graphql';
 
-
+@InputType()
 export class CreateNftDto {
-  @Field()
+  @Field(() => String)
   @IsString()
   path: string;
 
-  @Field()
+  @Field(() => Int)
   @IsNumber()
   @IsOptional()
   ownerId: number;
 
-  @Field()
+  @Field(() => Int)
   @IsNumber()
   @IsOptional()
   creatorId: number;
@@ -28,13 +28,13 @@ export class CreateNftDto {
   @IsOptional()
   promptGeneratedBy: string = "";
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => Int)
   @Transform(({ value }) => (value ? Number(value) : 0))
   @IsNumber()
   @IsOptional()
   price: number = 0;
 
-  @Field()
+  @Field(() => String)
   @IsString()
   name: string;
 
@@ -60,11 +60,11 @@ export class CreateNftDto {
   @IsOptional()
   tags?: string[];
 
-  @Field()
+  @Field(() => String)
   @IsString()
   description: string;
 
-  @Field()
+  @Field(() => String)
   @IsString()
   imageUrl: string;
 }

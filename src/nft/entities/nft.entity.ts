@@ -52,4 +52,9 @@ export class Nft {
     @ManyToMany(() => Auction, auction => auction.nft)
     @JoinTable()
     auctions?: Auction[];
+    
+    @Column({ default: false })
+    isOnAuction: boolean;
+    @Column({ default: false })
+    isOnSale: boolean;
 }
