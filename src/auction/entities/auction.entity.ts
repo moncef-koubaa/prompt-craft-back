@@ -27,7 +27,7 @@ export class Auction {
   @Column({ nullable: true })
   maxBidAmount: number;
 
-  @Column("decimal")
+  @Column('decimal')
   startingPrice: number;
 
   @Column()
@@ -39,8 +39,7 @@ export class Auction {
   @CreateDateColumn()
   createdAt: Date;
 
-  @OneToMany(() => Bid, (bid) => bid.auction)
-  @Column({ type: "timestamp" })
+  @Column({ type: 'timestamp' })
   endTime: Date;
 
   @OneToMany(() => Bid, (bid) => bid.auction)
