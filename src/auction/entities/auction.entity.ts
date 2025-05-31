@@ -5,16 +5,34 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Bid } from './bid.entity';
 import { JoinAuction } from './joinAuction.entity';
 import { Nft } from 'src/nft/entities/nft.entity';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
 
+@ObjectType()
 @Entity()
 export class Auction {
+  @Field(() => Int)
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Field()
+  @Column()
+  name: string;
+
+  @Field()
+  @Column()
+  description: string;
+
+  @Field(() => Int)
+  @Column()
+  startingPrice: number;
+
+  @Field(() => Int)
   @Column()
   nftId: number;
 
@@ -27,8 +45,9 @@ export class Auction {
   @Column({ nullable: true })
   maxBidAmount: number;
 
-  @Column('decimal')
-  startingPrice: number;
+  @Field(() => Int)
+  @Column()
+  currentPrice: number;
 
   @Column()
   duration: number;

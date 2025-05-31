@@ -9,10 +9,10 @@ import { JoinAuction } from './entities/joinAuction.entity';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/entities/user.entity';
 import { AuthModule } from 'src/auth/auth.module';
-import { Nft } from 'src/nft/entities/nft.entity';
 import { FrozenBalance } from './entities/frozen-balance.entity';
 import { UserModule } from 'src/user/user.module';
 import { NftModule } from 'src/nft/nft.module';
+import { Nft } from 'src/nft/entities/nft.entity';
 
 @Module({
   imports: [

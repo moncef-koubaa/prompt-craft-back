@@ -5,11 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Auction } from 'src/auction/entities/auction.entity';
 import { Nft } from './entities/nft.entity';
+import { NftResolver } from '../resolvers/nft';
+
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Auction, Nft])],
   controllers: [NftController],
-  providers: [NftService],
-  exports: [NftService],
+  providers: [NftService,NftResolver],
+  exports: [NftService,TypeOrmModule],
 })
 export class NftModule {}

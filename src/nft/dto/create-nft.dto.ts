@@ -6,15 +6,20 @@ import {
   IsOptional,
   IsString,
 } from "class-validator";
+import { InputType, Field, Int } from '@nestjs/graphql';
 
+@InputType()
 export class CreateNftDto {
+  @Field(() => String)
   @IsString()
   path: string;
 
+  @Field(() => Int)
   @IsNumber()
   @IsOptional()
   ownerId: number;
 
+  @Field(() => Int)
   @IsNumber()
   @IsOptional()
   creatorId: number;
@@ -23,14 +28,17 @@ export class CreateNftDto {
   @IsOptional()
   promptGeneratedBy: string = "";
 
+  @Field(() => Int)
   @Transform(({ value }) => (value ? Number(value) : 0))
   @IsNumber()
   @IsOptional()
   price: number = 0;
 
+  @Field(() => String)
   @IsString()
   name: string;
 
+  @Field(() => [Int], { nullable: true })
   @IsArray()
   @IsOptional()
   @IsNumber({}, { each: true })
@@ -46,4 +54,17 @@ export class CreateNftDto {
   @IsOptional()
   @Transform(({ value }) => (value !== undefined ? value : false))
   isOnSale: boolean = false;
+
+  @Field(() => [String], { nullable: true })
+  @IsArray()
+  @IsOptional()
+  tags?: string[];
+
+  @Field(() => String)
+  @IsString()
+  description: string;
+
+  @Field(() => String)
+  @IsString()
+  imageUrl: string;
 }
