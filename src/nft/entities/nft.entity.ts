@@ -49,7 +49,7 @@ export class Nft {
     tags?: string[];
 
     @Field(() => [Auction], { nullable: true })
-    @ManyToMany(() => Auction, auction => auction.nfts)
+    @ManyToMany(() => Auction, auction => auction.nft)
     @JoinTable()
     auctions?: Auction[];
 }

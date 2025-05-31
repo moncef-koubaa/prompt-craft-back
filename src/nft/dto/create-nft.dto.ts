@@ -1,40 +1,70 @@
+import { Transform } from "class-transformer";
+import {
+  IsArray,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from "class-validator";
 import { InputType, Field, Int } from '@nestjs/graphql';
-import { IsString, IsNumber, IsArray, IsOptional } from 'class-validator';
 
-@InputType()
+
 export class CreateNftDto {
-    @Field()
-    @IsString()
-    name: string;
+  @Field()
+  @IsString()
+  path: string;
 
-    @Field()
-    @IsString()
-    description: string;
+  @Field()
+  @IsNumber()
+  @IsOptional()
+  ownerId: number;
 
-    @Field()
-    @IsString()
-    imageUrl: string;
+  @Field()
+  @IsNumber()
+  @IsOptional()
+  creatorId: number;
 
-    @Field(() => Int)
-    @IsNumber()
-    price: number;
+  @IsString()
+  @IsOptional()
+  promptGeneratedBy: string = "";
 
-    @Field(() => Int)
-    @IsNumber()
-    ownerId: number;
+  @Field(() => Int, { nullable: true })
+  @Transform(({ value }) => (value ? Number(value) : 0))
+  @IsNumber()
+  @IsOptional()
+  price: number = 0;
 
-    @Field(() => Int)
-    @IsNumber()
-    creatorId: number;
+  @Field()
+  @IsString()
+  name: string;
 
-    @Field(() => [String], { nullable: true })
-    @IsArray()
-    @IsOptional()
-    tags?: string[];
+  @Field(() => [Int], { nullable: true })
+  @IsArray()
+  @IsOptional()
+  @IsNumber({}, { each: true })
+  @Transform(({ value }) => (Array.isArray(value) ? value : []))
+  auctionIds: number[] = [];
 
-    @Field(() => [Int], { nullable: true })
-    @IsArray()
-    @IsOptional()
-    auctionIds?: number[];
-    
+  @IsBoolean()
+  @IsOptional()
+  @Transform(({ value }) => (value !== undefined ? value : false))
+  isOnAuction: boolean = false;
+
+  @IsBoolean()
+  @IsOptional()
+  @Transform(({ value }) => (value !== undefined ? value : false))
+  isOnSale: boolean = false;
+
+  @Field(() => [String], { nullable: true })
+  @IsArray()
+  @IsOptional()
+  tags?: string[];
+
+  @Field()
+  @IsString()
+  description: string;
+
+  @Field()
+  @IsString()
+  imageUrl: string;
 }

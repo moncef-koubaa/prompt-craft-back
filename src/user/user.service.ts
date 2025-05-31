@@ -2,12 +2,16 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
+import { Auction } from 'src/auction/entities/auction.entity';
+import { FrozenBalance } from 'src/auction/entities/frozen-balance.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(FrozenBalance)
+    private frozenBalanceRepo: Repository<FrozenBalance>
   ) {}
 
   async create(user: Partial<User>): Promise<User> {
@@ -57,5 +61,78 @@ export class UserService {
     const { password, ...userWithoutPassword } =
       await this.userRepository.save(user);
     return userWithoutPassword;
+  }
+
+  async addBalance(userId: number, amount: number) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (user != null) {
+      user.balance += amount;
+      await this.userRepository.save(user);
+      return user.balance;
+    }
+  }
+
+  async deductBalance(userId: number, amount: number) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (user != null) {
+      if (user.balance < amount) {
+        throw new Error('Insufficient funds');
+      }
+      user.balance -= amount;
+      await this.userRepository.save(user);
+      return user.balance;
+    }
+  }
+
+  async unfreezeBidAmount(auction: Auction) {
+    if (auction.winnerId) {
+      const oldWinnerFrozenBalance = await this.frozenBalanceRepo.findOne({
+        where: {
+          userId: auction.winnerId,
+          auctionId: auction.id,
+          isActive: true,
+        },
+      });
+      if (oldWinnerFrozenBalance) {
+        this.addBalance(
+          oldWinnerFrozenBalance.userId,
+          oldWinnerFrozenBalance.amount
+        );
+        oldWinnerFrozenBalance.isActive = false;
+        await this.frozenBalanceRepo.save(oldWinnerFrozenBalance);
+      }
+    }
+  }
+
+  async freazeBidAmount(
+    auction: Auction,
+    currentWinnerId: number,
+    amount: number
+  ) {
+    this.deductBalance(currentWinnerId, amount);
+
+    let frozenBalance = await this.frozenBalanceRepo.findOne({
+      where: {
+        userId: currentWinnerId,
+        auctionId: auction.id,
+      },
+    });
+    if (frozenBalance) {
+      frozenBalance.amount = amount;
+      frozenBalance.isActive = true;
+    } else {
+      frozenBalance = this.frozenBalanceRepo.create({
+        userId: currentWinnerId,
+        auctionId: auction.id,
+        amount: amount,
+        isActive: true,
+      });
+    }
+    await this.frozenBalanceRepo.save(frozenBalance);
+  }
+
+  async transferBalance(fromUserId: number, toUserId: number, amount: number) {
+    await this.deductBalance(fromUserId, amount);
+    await this.addBalance(toUserId, amount);
   }
 }
