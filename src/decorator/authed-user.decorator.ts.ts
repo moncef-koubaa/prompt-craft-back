@@ -1,11 +1,10 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { log } from 'console';
-import { User } from 'src/user/entities/user.entity';
+import { createParamDecorator, ExecutionContext } from "@nestjs/common";
+import { User } from "src/user/entities/user.entity";
 
 export const AuthedUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     let payload: any;
-    if (ctx.getType() === 'ws') {
+    if (ctx.getType() === "ws") {
       const client = ctx.switchToWs().getClient();
       payload = client.user;
     } else {
