@@ -76,7 +76,7 @@ export class UserService {
     const user = await this.userRepository.findOneBy({ id: userId });
     if (user != null) {
       if (user.balance < amount) {
-        throw new BadRequestException('Insufficient funds');
+        throw new Error('Insufficient funds');
       }
       user.balance -= amount;
       await this.userRepository.save(user);
@@ -129,5 +129,10 @@ export class UserService {
       });
     }
     await this.frozenBalanceRepo.save(frozenBalance);
+  }
+
+  async transferBalance(fromUserId: number, toUserId: number, amount: number) {
+    await this.deductBalance(fromUserId, amount);
+    await this.addBalance(toUserId, amount);
   }
 }

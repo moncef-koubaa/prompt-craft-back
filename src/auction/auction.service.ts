@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Auction } from './entities/auction.entity';
 import { Bid } from './entities/bid.entity';
@@ -13,6 +18,8 @@ import { Cron } from '@nestjs/schedule';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserService } from 'src/user/user.service';
 import { PriorityMutex } from './priority-mutex';
+import { Nft } from 'src/nft/entities/nft.entity';
+import { NftService } from 'src/nft/nft.service';
 
 @Injectable()
 export class AuctionService {
@@ -24,7 +31,8 @@ export class AuctionService {
     @InjectRepository(JoinAuction)
     private joinRepo: Repository<JoinAuction>,
     private readonly eventEmitter: EventEmitter2,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly nftService: NftService
   ) {}
 
   private auctionLocks: Map<number, PriorityMutex> = new Map();
@@ -36,9 +44,28 @@ export class AuctionService {
     return this.auctionLocks.get(auctionId)!;
   }
 
-  async createAuction(dto: CreateAuctionDto) {
-    // TODO: make with connected user check for onership and if already on auction change nft status
-    const auction = this.auctionRepo.create(dto);
+  async createAuction(dto: CreateAuctionDto, user: User) {
+    const nft = await this.nftService.findOne(dto.nftId);
+    if (!nft) {
+      throw new NotFoundException('NFT not found');
+    }
+    if (nft.owner.id !== user.id) {
+      throw new ForbiddenException('You are not the owner of this NFT');
+    }
+    if (nft.isOnAuction) {
+      throw new BadRequestException('NFT is already on auction');
+    }
+
+    const endTime = new Date(Date.now() + dto.duration * 1000);
+    const auction = this.auctionRepo.create({
+      nftId: dto.nftId,
+      ownerId: user.id,
+      startingPrice: dto.startingPrice,
+      duration: dto.duration,
+      endTime: endTime,
+      maxBidAmount: dto.startingPrice,
+      isEnded: false,
+    });
     return await this.auctionRepo.save(auction);
   }
 
@@ -88,7 +115,6 @@ export class AuctionService {
     if (!auction) return false;
     if (auction.isEnded) throw new WsException('Auction has ended');
 
-    log('praticipant:', auction.participants);
     const participant = auction.participants.find(
       (participant) => participant.user.id === user.id
     );
@@ -121,8 +147,8 @@ export class AuctionService {
       }
 
       // NB: order is important here
-      await this.userService.freazeBidAmount(auction, bidderId, dto.amount);
       await this.userService.unfreezeBidAmount(auction);
+      await this.userService.freazeBidAmount(auction, bidderId, dto.amount);
 
       auction.winnerId = bidderId;
       auction.maxBidAmount = dto.amount;
@@ -144,26 +170,22 @@ export class AuctionService {
       auction.isEnded = true;
       await this.auctionRepo.save(auction);
 
-      const highestBid = await this.bidRepo
-        .createQueryBuilder('bid')
-        .where('bid.auctionId = :auctionId', { auctionId: auction.id })
-        .orderBy('bid.amount', 'DESC')
-        .getOne();
+      this.eventEmitter.emit('auction.ended', {
+        auctionId: auction.id,
+        winnerId: auction.winnerId,
+        amount: auction.maxBidAmount,
+      });
 
-      if (highestBid) {
-        auction.winnerId = highestBid.bidderId;
-        await this.auctionRepo.save(auction);
+      // transfer NFT ownership
+      await this.nftService.transferNft(auction.nftId, auction.winnerId);
 
-        this.eventEmitter.emit('auction.ended', {
-          auctionId: auction.id,
-          winnerId: highestBid.bidderId,
-          amount: highestBid.amount,
-        });
-
-        // transfer NFT ownership
-
-        // transfer money to the owner
-      }
+      // transfer money to the owner
+      await this.userService.unfreezeBidAmount(auction);
+      this.userService.transferBalance(
+        auction.winnerId,
+        auction.ownerId,
+        auction.maxBidAmount
+      );
     }, 1000);
   }
 

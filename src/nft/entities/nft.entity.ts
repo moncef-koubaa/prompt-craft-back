@@ -1,12 +1,12 @@
-import { Auction } from "src/auction/entities/auction.entity";
-import { User } from "src/user/entities/user.entity";
+import { Auction } from 'src/auction/entities/auction.entity';
+import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   Entity,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-} from "typeorm";
+} from 'typeorm';
 
 @Entity()
 export class Nft {
@@ -14,7 +14,7 @@ export class Nft {
   id: number;
   @Column({ unique: true })
   path: string;
-  @ManyToOne(() => User, (user) => user.nfts)
+  @ManyToOne(() => User, (user) => user.nfts, { eager: true })
   owner: User;
   @ManyToOne(() => User, (user) => user.nftsCreated)
   creator: User;

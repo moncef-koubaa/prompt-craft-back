@@ -5,10 +5,10 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-} from "typeorm";
-import { Bid } from "./bid.entity";
-import { JoinAuction } from "./joinAuction.entity";
-import { Nft } from "src/nft/entities/nft.entity";
+} from 'typeorm';
+import { Bid } from './bid.entity';
+import { JoinAuction } from './joinAuction.entity';
+import { Nft } from 'src/nft/entities/nft.entity';
 
 @Entity()
 export class Auction {
@@ -16,7 +16,7 @@ export class Auction {
   id: number;
 
   @Column()
-  nftId: string;
+  nftId: number;
 
   @Column()
   ownerId: number;

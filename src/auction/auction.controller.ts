@@ -9,8 +9,8 @@ export class AuctionController {
   constructor(private readonly auctionService: AuctionService) {}
 
   @Post()
-  async create(@Body() dto: CreateAuctionDto) {
-    return this.auctionService.createAuction(dto);
+  async create(@Body() dto: CreateAuctionDto, @AuthedUser() user: User) {
+    return this.auctionService.createAuction(dto, user);
   }
 
   @Get()
