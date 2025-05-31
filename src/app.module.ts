@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entities/user.entity';
-import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { PlanModule } from './plan/plan.module';
 import { Plan } from './plan/entities/plan.entity';
@@ -18,10 +17,18 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { NotificationModule } from './notification/notiffication.module';
 import { PaymentModule } from './payment/payment.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { Nft } from './nft/entities/nft.entity';
+import { NftModule } from './nft/nft.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+      sortSchema: true,
+    }),
     UserModule,
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'src', 'assets', 'generated_image'),
@@ -34,7 +41,7 @@ import { PaymentModule } from './payment/payment.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, Plan, Auction, Bid, JoinAuction],
+      entities: [User, Plan, Auction, Bid, JoinAuction, Nft],
       synchronize: true,
     }),
     PlanModule,
@@ -44,6 +51,7 @@ import { PaymentModule } from './payment/payment.module';
     AuthModule,
     NotificationModule,
     PaymentModule,
+    NftModule,
   ],
   providers: [LlmService],
   controllers: [LlmController],
