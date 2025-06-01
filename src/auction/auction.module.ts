@@ -14,6 +14,7 @@ import { UserModule } from 'src/user/user.module';
 import { NftModule } from 'src/nft/nft.module';
 import { Nft } from 'src/nft/entities/nft.entity';
 import { BidResolver } from 'src/resolvers/bid';
+import { AuctionResolver } from 'src/resolvers/auction';
 
 @Module({
   imports: [
@@ -30,6 +31,6 @@ import { BidResolver } from 'src/resolvers/bid';
     NftModule,
   ],
   controllers: [AuctionController],
-  providers: [AuctionService, AuctionGateway, UserService,BidResolver],
+  providers: [AuctionService, AuctionGateway, UserService,BidResolver,AuctionResolver],
 })
 export class AuctionModule {}

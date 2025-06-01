@@ -35,13 +35,16 @@ export class Auction {
   @Field(() => Int)
   @Column()
   nftId: number;
-
+  
+  @Field(() => Int)
   @Column()
   ownerId: number;
-
+  
+  @Field(() => Int, { nullable: true })
   @Column({ nullable: true })
   winnerId: number;
-
+  
+  @Field(() => Int, { nullable: true })
   @Column({ nullable: true })
   maxBidAmount: number;
 
@@ -49,25 +52,30 @@ export class Auction {
   @Column()
   currentPrice: number;
 
+  @Field(() => Int)
   @Column()
   duration: number;
 
+  @Field()
   @Column({ default: false })
   isEnded: boolean;
 
+  @Field()
   @CreateDateColumn()
   createdAt: Date;
 
+  @Field(() => Date)
   @Column({ type: 'timestamp' })
   endTime: Date;
 
-  @Field(() => [String], { nullable: true })
+  @Field(() => [Bid], { nullable: true })
   @OneToMany(() => Bid, (bid) => bid.auction)
   bids: Bid[];
 
   @OneToMany(() => JoinAuction, (participant) => participant.auction)
   participants: JoinAuction[];
 
+  @Field(() => Nft)
   @ManyToOne(() => Nft, (nft) => nft.auctions)
   nft: Nft;
 }
