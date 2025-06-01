@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:16
@@ -22,6 +24,15 @@ services:
     depends_on:
       - db
   
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5674:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
   nestjs_app:
     build:
       context: .
@@ -38,6 +49,7 @@ services:
     command: npm run start:dev
     depends_on:
       - db
+      - rabbitmq
 
   llm_service:
     build:
@@ -51,15 +63,29 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    depends_on:
+      - rabbitmq
 
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
+  notification_service:
+    build:
+      context: ./notification-service  # Path to your notification service
+      dockerfile: Dockerfile
+    container_name: notification_service
+    restart: always
+    env_file:
+      - ./notification-service/.env
     ports:
-      - "5674:5672"
-      - "15672:15672"
+      - "3002:3002"  # Different port than your main app
+    volumes:
+      - ./notification-service:/app:z
+      - /app/node_modules
+    depends_on:
+      - rabbitmq
     environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
 
 volumes:
   pgdata:
