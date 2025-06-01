@@ -17,6 +17,7 @@ export class NftResolver {
         @InjectRepository(User)
         private userRepository: Repository<User>,
     ) {}   
+    @Public()
     @Mutation(() => Nft)
     async createNft(
         @Args('input') input: CreateNftDto
@@ -38,6 +39,7 @@ export class NftResolver {
         return this.nftRepository.save(nft);
     }
 
+    @Public()
     @Mutation(() => Nft)
     async updateNft(
         @Args('input') input: UpdateNftDto,
@@ -52,6 +54,7 @@ export class NftResolver {
         return this.nftRepository.save(nft);
     }
 
+    @Public()
     @Mutation(() => Boolean)
     async deleteNft(
         @Args('id') id: number,

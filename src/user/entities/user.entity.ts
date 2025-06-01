@@ -2,6 +2,7 @@ import { JoinAuction } from "src/auction/entities/joinAuction.entity";
 import { Nft } from "src/nft/entities/nft.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { Bid } from "src/auction/entities/bid.entity";
 
 @ObjectType()
 @Entity()
@@ -46,4 +47,8 @@ export class User {
   @Field(() => [Nft], { nullable: true })
   @OneToMany(() => Nft, (nft) => nft.creator)
   createdNfts?: Nft[];
+
+  @Field(() => [Bid], { nullable: true })
+  @OneToMany(() => Bid, (bid) => bid.bidderId)
+  bids: Bid[];
 }

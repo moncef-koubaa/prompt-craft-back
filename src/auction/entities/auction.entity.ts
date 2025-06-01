@@ -61,6 +61,7 @@ export class Auction {
   @Column({ type: 'timestamp' })
   endTime: Date;
 
+  @Field(() => [String], { nullable: true })
   @OneToMany(() => Bid, (bid) => bid.auction)
   bids: Bid[];
 

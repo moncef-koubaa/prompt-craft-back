@@ -13,6 +13,7 @@ import { FrozenBalance } from './entities/frozen-balance.entity';
 import { UserModule } from 'src/user/user.module';
 import { NftModule } from 'src/nft/nft.module';
 import { Nft } from 'src/nft/entities/nft.entity';
+import { BidResolver } from 'src/resolvers/bid';
 
 @Module({
   imports: [
@@ -29,6 +30,6 @@ import { Nft } from 'src/nft/entities/nft.entity';
     NftModule,
   ],
   controllers: [AuctionController],
-  providers: [AuctionService, AuctionGateway, UserService],
+  providers: [AuctionService, AuctionGateway, UserService,BidResolver],
 })
 export class AuctionModule {}
