@@ -12,7 +12,7 @@ import { InputType, Field, Int } from '@nestjs/graphql';
 export class CreateNftDto {
   @Field(() => String)
   @IsString()
-  path: string;
+  imageUrl: string;
 
   @Field(() => Int)
   @IsNumber()
@@ -45,11 +45,13 @@ export class CreateNftDto {
   @Transform(({ value }) => (Array.isArray(value) ? value : []))
   auctionIds: number[] = [];
 
+  @Field(() => Boolean, { nullable: true })
   @IsBoolean()
   @IsOptional()
   @Transform(({ value }) => (value !== undefined ? value : false))
   isOnAuction: boolean = false;
 
+  @Field(() => Boolean, { nullable: true })
   @IsBoolean()
   @IsOptional()
   @Transform(({ value }) => (value !== undefined ? value : false))
@@ -64,7 +66,5 @@ export class CreateNftDto {
   @IsString()
   description: string;
 
-  @Field(() => String)
-  @IsString()
-  imageUrl: string;
+  
 }
