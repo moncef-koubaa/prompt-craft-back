@@ -1,29 +1,30 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { Public } from '../decorator/public.decorator';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { LoginUserDto } from 'src/user/dto/login-user.dto';
-import { AuthedUser } from 'src/decorator/authed-user.decorator.ts';
-import { User } from 'src/user/entities/user.entity';
+import { Body, Controller, Get, Post } from "@nestjs/common";
+import { AuthService } from "./auth.service";
+import { Public } from "../decorator/public.decorator";
+import { CreateUserDto } from "src/user/dto/create-user.dto";
+import { LoginUserDto } from "src/user/dto/login-user.dto";
+import { AuthedUser } from "src/decorator/authed-user.decorator.ts";
+import { User } from "src/user/entities/user.entity";
 
-@Controller('auth')
+@Controller("auth")
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Public()
-  @Post('signup')
+  @Post("signup")
   async signUp(@Body() data: CreateUserDto) {
     await this.authService.signUp(data);
   }
 
   @Public()
-  @Post('login')
+  @Post("login")
   async login(@Body() LoginUserDto: LoginUserDto) {
     return this.authService.login(LoginUserDto);
   }
 
-  @Get('me')
+  @Get("me")
   async me(@AuthedUser() user: User): Promise<User> {
+    console.log("wsiln", user);
     return user;
   }
 }
