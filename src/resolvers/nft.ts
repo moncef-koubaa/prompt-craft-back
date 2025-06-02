@@ -115,7 +115,7 @@ export class NftResolver {
   }
   @Public()
   @Query(() => Nft)
-  async getNft(@Args("id") id: number): Promise<Nft> {
+  async getNft(@Args("id", { type: () => Int }) id: number): Promise<Nft> {
     const nft = await this.nftRepository.findOne({
       where: { id },
       relations: ["owner", "creator"],
