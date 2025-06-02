@@ -211,4 +211,14 @@ export class AuctionService {
       }
     }
   }
+
+  async getBidders(auctionId: number) {
+    const auction = await this.auctionRepo.findOne({
+      where: { id: auctionId },
+      relations: ['bids'],
+    });
+    if (!auction) throw new NotFoundException('Auction not found');
+
+    return auction.bids.map((bid) => bid.bidderId);
+  }
 }

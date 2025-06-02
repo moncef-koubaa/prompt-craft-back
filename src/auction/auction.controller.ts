@@ -13,6 +13,13 @@ export class AuctionController {
     return this.auctionService.createAuction(dto, user);
   }
 
+  @Get('/:id')
+  async getAuction(@Param('id') auctionId: number,@AuthedUser() user: User) {
+    if (await this.auctionService.isParticipant(auctionId, user)) {
+    return this.auctionService.getAuction(auctionId);
+    }
+  }
+
   @Get()
   async getAuctions(@Body() userId: number) {
     return this.auctionService.getMyAuctions(userId);
@@ -21,5 +28,15 @@ export class AuctionController {
   @Post('join/:id')
   async joinAuction(@Param('id') auctionId: number, @AuthedUser() user: User) {
     return this.auctionService.joinAuction(auctionId, user);
+  }
+
+  @Get('/:id/bids')
+  async getBidders(@Param('id') auctionId: number) {
+    return this.auctionService.getBidders(auctionId);
+  }
+
+  @Get('/:id/participant')
+  async isParticipant(@Param('id') auctionId: number, @AuthedUser() user: User) {
+    return this.auctionService.isParticipant(auctionId, user);
   }
 }
