@@ -20,6 +20,7 @@ import { PriorityMutex } from './priority-mutex';
 import { NftService } from 'src/nft/nft.service';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationDto } from 'src/notification/notification.dto';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class AuctionService {
@@ -218,28 +219,30 @@ export class AuctionService {
     }, 1000);
   }
 
-  // @Cron('*/5 * * * *')
-  // async scheduleAuctionEnd() {
-  //   const now = new Date();
-  //   const in5Minutes = new Date(now.getTime() + 5 * 60 * 1000);
-  //   const auctions = await this.auctionRepo.find({
-  //     where: {
-  //       isEnded: false,
-  //       endTime: LessThanOrEqual(in5Minutes),
-  //     },
-  //   });
+  @Cron('*/5 * * * *')
+  async scheduleAuctionEnd() {
+    const now = new Date();
+    const in5Minutes = new Date(now.getTime() + 5 * 60 * 1000);
+    log('in 5 minutes', now);
+    const auctions = await this.auctionRepo.find({
+      where: {
+        isEnded: false,
+        endTime: LessThanOrEqual(in5Minutes),
+      },
+    });
 
-  //   for (const auction of auctions) {
-  //     const timeLeft = auction.endTime.getTime() - now.getTime();
-  //     if (timeLeft > 0) {
-  //       setTimeout(async () => {
-  //         this.endAuction(auction);
-  //       }, timeLeft);
-  //     } else {
-  //       this.endAuction(auction);
-  //     }
-  //   }
-  // }
+    for (const auction of auctions) {
+      log(`Scheduling end for auction ${auction.id} at ${auction.endTime}`);
+      const timeLeft = auction.endTime.getTime() - now.getTime();
+      if (timeLeft > 0) {
+        setTimeout(async () => {
+          this.endAuction(auction);
+        }, timeLeft);
+      } else {
+        this.endAuction(auction);
+      }
+    }
+  }
 
   async getBidders(auctionId: number) {
     const auction = await this.auctionRepo.findOne({
