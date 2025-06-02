@@ -14,7 +14,7 @@ export class UserService {
     @InjectRepository(Nft)
     private readonly nftRepository: Repository<Nft>,
     @InjectRepository(FrozenBalance)
-    private frozenBalanceRepo: Repository<FrozenBalance>,
+    private frozenBalanceRepo: Repository<FrozenBalance>
   ) {}
 
   async create(user: Partial<User>): Promise<User> {
@@ -27,7 +27,7 @@ export class UserService {
   }
 
   async findOneBy(
-    where: FindOptionsWhere<User> | FindOptionsWhere<User>[],
+    where: FindOptionsWhere<User> | FindOptionsWhere<User>[]
   ): Promise<User | null> {
     return this.userRepository.findOneBy(where);
   }
@@ -69,7 +69,7 @@ export class UserService {
   async addBalance(userId: number, amount: number) {
     const user = await this.userRepository.findOneBy({ id: userId });
     if (user != null) {
-      user.balance += amount;
+      user.balance = Number(user.balance) + Number(amount);
       await this.userRepository.save(user);
       return user.balance;
     }
@@ -99,7 +99,7 @@ export class UserService {
       if (oldWinnerFrozenBalance) {
         this.addBalance(
           oldWinnerFrozenBalance.userId,
-          oldWinnerFrozenBalance.amount,
+          oldWinnerFrozenBalance.amount
         );
         oldWinnerFrozenBalance.isActive = false;
         await this.frozenBalanceRepo.save(oldWinnerFrozenBalance);
@@ -110,7 +110,7 @@ export class UserService {
   async freazeBidAmount(
     auction: Auction,
     currentWinnerId: number,
-    amount: number,
+    amount: number
   ) {
     this.deductBalance(currentWinnerId, amount);
 
