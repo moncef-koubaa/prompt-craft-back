@@ -114,7 +114,7 @@ export class NftService {
     }
   }
 
-  async likeNft(id: number, userId: number) {
+  async likeNft(id: number, user: User) {
     const nft = await this.nftRepository.findOneBy({ id });
     if (!nft) {
       throw new NotFoundException('NFT not found');
@@ -124,8 +124,8 @@ export class NftService {
     const notification: NotificationDto = {
       nftId: id,
       type: 'like',
-      message: `Nft ${nft.name} has been liked.`,
-      userId: userId,
+      message: `${user.username} liked your NFT ${nft.name}`,
+      userId: user.id,
     };
     this.notficationService.sendNotification(notification);
   }
