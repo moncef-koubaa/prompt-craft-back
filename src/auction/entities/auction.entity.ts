@@ -21,11 +21,11 @@ export class Auction {
   id: number;
 
   @Field()
-  @Column()
+  @Column({ nullable: true })
   name: string;
 
   @Field()
-  @Column()
+  @Column({ nullable: true })
   description: string;
 
   @Field(() => Int)
@@ -49,7 +49,7 @@ export class Auction {
   maxBidAmount: number;
 
   @Field(() => Int)
-  @Column()
+  @Column({ nullable: true })
   currentPrice: number;
 
   @Field(() => Int)
