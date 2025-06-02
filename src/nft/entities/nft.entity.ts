@@ -4,8 +4,8 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
-  ManyToMany,
-  JoinTable,
+  CreateDateColumn,
+  OneToMany,
 } from "typeorm";
 import { ObjectType, Field, Int } from "@nestjs/graphql";
 import { User } from "../../user/entities/user.entity";
@@ -30,16 +30,21 @@ export class Nft {
   @Column({ nullable: true })
   description: string;
 
+  @Field()
+  @Column({ default: "default title" })
+  title: string;
+
   @Field({ nullable: true })
   @Column({ nullable: true })
   imageUrl?: string;
 
   @Field(() => Int)
   @Column()
-  price: number;
+  price?: number;
 
   @Field(() => User)
   @ManyToOne(() => User, (user) => user.ownedNfts)
+  @JoinColumn({ name: "ownerId" })
   owner: User;
 
   @Field(() => Int)
@@ -48,6 +53,7 @@ export class Nft {
 
   @Field(() => User)
   @ManyToOne(() => User, (user) => user.createdNfts)
+  @JoinColumn({ name: "creatorId" })
   creator: User;
 
   @Field(() => Int)
@@ -59,8 +65,7 @@ export class Nft {
   tags?: string[];
 
   @Field(() => [Auction], { nullable: true })
-  @ManyToMany(() => Auction, (auction) => auction.nft)
-  @JoinTable()
+  @OneToMany(() => Auction, (auction) => auction.nft)
   auctions?: Auction[];
 
   @Field()
@@ -70,4 +75,12 @@ export class Nft {
   @Field()
   @Column({ default: false })
   isOnSale: boolean;
+
+  @Field(() => Date)
+  @CreateDateColumn()
+  mintedAt: Date;
+
+  @Field(() => Number, { defaultValue: 0 })
+  @Column({ default: 0 })
+  likeCount: number;
 }

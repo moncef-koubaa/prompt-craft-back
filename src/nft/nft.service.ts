@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateNftDto } from './dto/create-nft.dto';
 import { UpdateNftDto } from './dto/update-nft.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Nft } from './entities/nft.entity';
-import { DeepPartial, Repository } from 'typeorm';
+import { DeepPartial, Not, Repository } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Auction } from 'src/auction/entities/auction.entity';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationDto } from 'src/notification/notification.dto';
 
 @Injectable()
 export class NftService {
@@ -15,7 +17,8 @@ export class NftService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(Auction)
-    private readonly auctionRepository: Repository<Auction>
+    private readonly auctionRepository: Repository<Auction>,
+    private readonly notficationService: NotificationService
   ) {}
   async create(createNftDto: CreateNftDto, userId: number) {
     createNftDto.ownerId = userId;
@@ -85,6 +88,14 @@ export class NftService {
       });
   }
 
+  async makeOnAuction(id: number) {
+    const nft = await this.nftRepository.findOneBy({ id });
+    if (nft) {
+      nft.isOnAuction = true;
+      return await this.nftRepository.save(nft);
+    }
+  }
+
   remove(id: number) {
     return this.nftRepository.delete(id).then((result) => {
       if (result.affected === 0) {
@@ -101,5 +112,21 @@ export class NftService {
       nft.owner = newOwner;
       return await this.nftRepository.save(nft);
     }
+  }
+
+  async likeNft(id: number, userId: number) {
+    const nft = await this.nftRepository.findOneBy({ id });
+    if (!nft) {
+      throw new NotFoundException('NFT not found');
+    }
+    nft.likeCount++;
+    await this.nftRepository.save(nft);
+    const notification: NotificationDto = {
+      nftId: id,
+      type: 'like',
+      message: `Nft ${nft.name} has been liked.`,
+      userId: userId,
+    };
+    this.notficationService.sendNotification(notification);
   }
 }

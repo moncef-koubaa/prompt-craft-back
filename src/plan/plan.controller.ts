@@ -12,11 +12,11 @@ import { CreatePlanDto } from './dto/create-plan.dto';
 import { UpdatePlanDto } from './dto/update-plan.dto';
 import { Roles } from 'src/decorator/roles.decorator';
 
-@Roles(['admin'])
 @Controller('plan')
 export class PlanController {
   constructor(private readonly planService: PlanService) {}
 
+  @Roles(['admin'])
   @Post()
   create(@Body() createPlanDto: CreatePlanDto) {
     return this.planService.create(createPlanDto);
@@ -32,11 +32,13 @@ export class PlanController {
     return this.planService.findOne(+id);
   }
 
+  @Roles(['admin'])
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePlanDto: UpdatePlanDto) {
     return this.planService.update(+id, updatePlanDto);
   }
 
+  @Roles(['admin'])
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.planService.remove(+id);

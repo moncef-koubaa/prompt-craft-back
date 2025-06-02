@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args } from "@nestjs/graphql";
+import { Resolver, Query, Mutation, Args, Int } from "@nestjs/graphql";
 import { Nft } from "../nft/entities/nft.entity";
 import { CreateNftDto } from "../nft/dto/create-nft.dto";
 import { UpdateNftDto } from "../nft/dto/update-nft.dto";
@@ -19,6 +19,7 @@ export class NftResolver {
     @InjectRepository(User)
     private userRepository: Repository<User>
   ) {}
+
   @Public()
   @Mutation(() => Nft)
   async createNft(@Args("input") input: CreateNftDto): Promise<Nft> {
