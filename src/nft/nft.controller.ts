@@ -26,7 +26,7 @@ export class NftController {
 
   @Post('like/:id')
   like(@Param('id') id: string, @AuthedUser() user: User) {
-    return this.nftService.likeNft(+id, user.id);
+    return this.nftService.likeNft(+id, user);
   }
 
   @Get()

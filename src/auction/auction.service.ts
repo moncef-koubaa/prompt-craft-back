@@ -103,9 +103,9 @@ export class AuctionService {
     const auction = await this.auctionRepo.findOneBy({ id: auctionId });
     if (!auction) throw new BadRequestException('Auction not found');
 
-    if (auction.ownerId === user.id) {
-      throw new BadRequestException('You cannot join your own auction');
-    }
+    // if (auction.ownerId === user.id) {
+    //   throw new BadRequestException('You cannot join your own auction');
+    // }
 
     const existingJoin = await this.joinRepo.findOne({
       where: {
@@ -156,6 +156,9 @@ export class AuctionService {
       let auction = await this.auctionRepo.findOneBy({ id: dto.auctionId });
       if (!auction) throw new WsException('Auction not found');
       if (auction.isEnded) throw new WsException('Auction has ended');
+      if (auction.ownerId === bidderId) {
+        throw new WsException('You cannot bid on your own auction');
+      }
       const user = await this.userService.findOneBy({ id: bidderId });
       const userBalance = await this.userService.getBalance(bidderId);
       if (userBalance < dto.amount) {
@@ -182,9 +185,10 @@ export class AuctionService {
       } as DeepPartial<Bid>);
       bid = await this.bidRepo.save(bid);
 
+      const nft = await this.nftService.findOne(auction.nftId);
       const notification: NotificationDto = {
         nftId: auction.nftId,
-        type: 'newBid',
+        type: `${user?.username} placed a bid for the NFT ${nft?.name}`,
         message: `${auction.id}`,
         userId: bidderId,
       };
@@ -200,10 +204,16 @@ export class AuctionService {
       auction.isEnded = true;
       await this.auctionRepo.save(auction);
 
+      const winner = await this.userService.findOneBy({
+        id: auction.winnerId,
+      });
+      const nft = await this.nftService.findOne(auction.nftId);
+      const message = `Auction for NFT ${nft?.name} has ended. User ${winner?.username} has won with amount ${auction.maxBidAmount}.`;
+
       this.eventEmitter.emit('auction.ended', {
-        auctionId: auction.id,
+        nftId: nft?.id,
         winnerId: auction.winnerId,
-        amount: auction.maxBidAmount,
+        message: message,
       });
 
       // transfer NFT ownership
@@ -223,7 +233,6 @@ export class AuctionService {
   async scheduleAuctionEnd() {
     const now = new Date();
     const in5Minutes = new Date(now.getTime() + 5 * 60 * 1000);
-    log('in 5 minutes', now);
     const auctions = await this.auctionRepo.find({
       where: {
         isEnded: false,
@@ -232,7 +241,6 @@ export class AuctionService {
     });
 
     for (const auction of auctions) {
-      log(`Scheduling end for auction ${auction.id} at ${auction.endTime}`);
       const timeLeft = auction.endTime.getTime() - now.getTime();
       if (timeLeft > 0) {
         setTimeout(async () => {
