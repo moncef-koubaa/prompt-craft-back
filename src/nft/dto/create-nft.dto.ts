@@ -6,11 +6,12 @@ import {
   IsOptional,
   IsString,
 } from "class-validator";
-import { InputType, Field, Int } from '@nestjs/graphql';
+import { InputType, Field, Int } from "@nestjs/graphql";
 
 @InputType()
 export class CreateNftDto {
   @Field(() => String)
+  @IsOptional()
   @IsString()
   imageUrl: string;
 
@@ -64,7 +65,6 @@ export class CreateNftDto {
 
   @Field(() => String)
   @IsString()
+  @IsOptional()
   description: string;
-
-  
 }

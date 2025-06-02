@@ -3,23 +3,23 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Auction } from './entities/auction.entity';
-import { Bid } from './entities/bid.entity';
-import { JoinAuction } from './entities/joinAuction.entity';
-import { LessThanOrEqual, Repository } from 'typeorm';
-import { CreateAuctionDto } from './dto/create-auction.dto';
-import { PlaceBidDto } from './dto/place-bid.dto';
-import { log } from 'console';
-import { WsException } from '@nestjs/websockets';
-import { User } from 'src/user/entities/user.entity';
-import { Cron } from '@nestjs/schedule';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { UserService } from 'src/user/user.service';
-import { PriorityMutex } from './priority-mutex';
-import { Nft } from 'src/nft/entities/nft.entity';
-import { NftService } from 'src/nft/nft.service';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Auction } from "./entities/auction.entity";
+import { Bid } from "./entities/bid.entity";
+import { JoinAuction } from "./entities/joinAuction.entity";
+import { LessThanOrEqual, Repository } from "typeorm";
+import { CreateAuctionDto } from "./dto/create-auction.dto";
+import { PlaceBidDto } from "./dto/place-bid.dto";
+import { log } from "console";
+import { WsException } from "@nestjs/websockets";
+import { User } from "src/user/entities/user.entity";
+import { Cron } from "@nestjs/schedule";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { UserService } from "src/user/user.service";
+import { PriorityMutex } from "./priority-mutex";
+import { Nft } from "src/nft/entities/nft.entity";
+import { NftService } from "src/nft/nft.service";
 
 @Injectable()
 export class AuctionService {
@@ -47,13 +47,13 @@ export class AuctionService {
   async createAuction(dto: CreateAuctionDto, user: User) {
     const nft = await this.nftService.findOne(dto.nftId);
     if (!nft) {
-      throw new NotFoundException('NFT not found');
+      throw new NotFoundException("NFT not found");
     }
     if (nft.owner.id !== user.id) {
-      throw new ForbiddenException('You are not the owner of this NFT');
+      throw new ForbiddenException("You are not the owner of this NFT");
     }
     if (nft.isOnAuction) {
-      throw new BadRequestException('NFT is already on auction');
+      throw new BadRequestException("NFT is already on auction");
     }
 
     const endTime = new Date(Date.now() + dto.duration * 1000);
@@ -70,10 +70,10 @@ export class AuctionService {
   }
 
   async getAuction(auctionId: number) {
-    log('Fetching auction with ID:', auctionId);
+    log("Fetching auction with ID:", auctionId);
     const auction = await this.auctionRepo.findOne({
       where: { id: auctionId },
-      relations: ['bids', 'participants'],
+      relations: ["bids", "participants"],
     });
 
     return auction;
@@ -81,10 +81,10 @@ export class AuctionService {
 
   async joinAuction(auctionId: number, user: User) {
     const auction = await this.auctionRepo.findOneBy({ id: auctionId });
-    if (!auction) throw new BadRequestException('Auction not found');
+    if (!auction) throw new BadRequestException("Auction not found");
 
     if (auction.ownerId === user.id) {
-      throw new BadRequestException('You cannot join your own auction');
+      throw new BadRequestException("You cannot join your own auction");
     }
 
     const existingJoin = await this.joinRepo.findOne({
@@ -94,7 +94,7 @@ export class AuctionService {
       },
     });
     if (existingJoin) {
-      throw new BadRequestException('Already joined the auction');
+      throw new BadRequestException("Already joined the auction");
     }
 
     const join = this.joinRepo.create({
@@ -107,13 +107,13 @@ export class AuctionService {
 
   async isParticipant(auctionId: number, user: User): Promise<boolean> {
     const auction = await this.auctionRepo
-      .createQueryBuilder('auction')
-      .leftJoinAndSelect('auction.participants', 'participants')
-      .leftJoinAndSelect('participants.user', 'user')
-      .where('auction.id = :auctionId', { auctionId })
+      .createQueryBuilder("auction")
+      .leftJoinAndSelect("auction.participants", "participants")
+      .leftJoinAndSelect("participants.user", "user")
+      .where("auction.id = :auctionId", { auctionId })
       .getOne();
     if (!auction) return false;
-    if (auction.isEnded) throw new WsException('Auction has ended');
+    if (auction.isEnded) throw new WsException("Auction has ended");
 
     const participant = auction.participants.find(
       (participant) => participant.user.id === user.id
@@ -125,7 +125,7 @@ export class AuctionService {
   async getMyAuctions(userId: number) {
     const auctions = await this.auctionRepo.find({
       where: { ownerId: userId },
-      relations: ['bids', 'participants'],
+      relations: ["bids", "participants"],
     });
     return auctions;
   }
@@ -134,16 +134,16 @@ export class AuctionService {
     const lock = this.getLockForAuction(dto.auctionId);
     await lock.runExclusive(async () => {
       let auction = await this.auctionRepo.findOneBy({ id: dto.auctionId });
-      if (!auction) throw new WsException('Auction not found');
-      if (auction.isEnded) throw new WsException('Auction has ended');
+      if (!auction) throw new WsException("Auction not found");
+      if (auction.isEnded) throw new WsException("Auction has ended");
 
       const userBalance = await this.userService.getBalance(bidderId);
       if (userBalance < dto.amount) {
-        throw new WsException('Insufficient funds');
+        throw new WsException("Insufficient funds");
       }
 
       if (dto.amount < auction.maxBidAmount) {
-        throw new WsException('Bid amount is less than current highest bid');
+        throw new WsException("Bid amount is less than current highest bid");
       }
 
       // NB: order is important here
@@ -170,7 +170,7 @@ export class AuctionService {
       auction.isEnded = true;
       await this.auctionRepo.save(auction);
 
-      this.eventEmitter.emit('auction.ended', {
+      this.eventEmitter.emit("auction.ended", {
         auctionId: auction.id,
         winnerId: auction.winnerId,
         amount: auction.maxBidAmount,
@@ -189,7 +189,7 @@ export class AuctionService {
     }, 1000);
   }
 
-  @Cron('*/5 * * * *')
+  @Cron("*/5 * * * *")
   async scheduleAuctionEnd() {
     const now = new Date();
     const in5Minutes = new Date(now.getTime() + 5 * 60 * 1000);
@@ -210,5 +210,16 @@ export class AuctionService {
         this.endAuction(auction);
       }
     }
+  }
+
+  async getAllAuctions() {
+    const auctions = await this.auctionRepo.find({
+      relations: ["nft", "participants", "bids"],
+      order: { createdAt: "DESC" },
+      where: {
+        isEnded: false,
+      },
+    });
+    return auctions;
   }
 }

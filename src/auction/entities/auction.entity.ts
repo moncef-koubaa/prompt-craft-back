@@ -7,11 +7,11 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   JoinTable,
-} from 'typeorm';
-import { Bid } from './bid.entity';
-import { JoinAuction } from './joinAuction.entity';
-import { Nft } from 'src/nft/entities/nft.entity';
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+} from "typeorm";
+import { Bid } from "./bid.entity";
+import { JoinAuction } from "./joinAuction.entity";
+import { Nft } from "src/nft/entities/nft.entity";
+import { ObjectType, Field, Int } from "@nestjs/graphql";
 
 @ObjectType()
 @Entity()
@@ -35,15 +35,15 @@ export class Auction {
   @Field(() => Int)
   @Column()
   nftId: number;
-  
+
   @Field(() => Int)
   @Column()
   ownerId: number;
-  
+
   @Field(() => Int, { nullable: true })
   @Column({ nullable: true })
   winnerId: number;
-  
+
   @Field(() => Int, { nullable: true })
   @Column({ nullable: true })
   maxBidAmount: number;
@@ -65,7 +65,7 @@ export class Auction {
   createdAt: Date;
 
   @Field(() => Date)
-  @Column({ type: 'timestamp' })
+  @Column({ type: "timestamp", nullable: true })
   endTime: Date;
 
   @Field(() => [Bid], { nullable: true })

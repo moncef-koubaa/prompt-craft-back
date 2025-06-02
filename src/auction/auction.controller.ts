@@ -1,10 +1,10 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
-import { AuctionService } from './auction.service';
-import { CreateAuctionDto } from './dto/create-auction.dto';
-import { AuthedUser } from 'src/decorator/authed-user.decorator.ts';
-import { User } from 'src/user/entities/user.entity';
+import { Controller, Post, Body, Get, Param } from "@nestjs/common";
+import { AuctionService } from "./auction.service";
+import { CreateAuctionDto } from "./dto/create-auction.dto";
+import { AuthedUser } from "src/decorator/authed-user.decorator.ts";
+import { User } from "src/user/entities/user.entity";
 
-@Controller('auctions')
+@Controller("auctions")
 export class AuctionController {
   constructor(private readonly auctionService: AuctionService) {}
 
@@ -14,12 +14,17 @@ export class AuctionController {
   }
 
   @Get()
-  async getAuctions(@Body() userId: number) {
-    return this.auctionService.getMyAuctions(userId);
+  async getAllAuctions() {
+    return this.auctionService.getAllAuctions();
   }
 
-  @Post('join/:id')
-  async joinAuction(@Param('id') auctionId: number, @AuthedUser() user: User) {
+  @Get("/:userId")
+  async getAuctions(@Param("userId") userId: number) {
+    return this.auctionService.getMyAuctions(+userId);
+  }
+
+  @Post("join/:id")
+  async joinAuction(@Param("id") auctionId: number, @AuthedUser() user: User) {
     return this.auctionService.joinAuction(auctionId, user);
   }
 }
