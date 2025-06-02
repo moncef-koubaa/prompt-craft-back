@@ -20,7 +20,7 @@ export class Auction {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Field()
+  @Field({ nullable: true })  
   @Column({ nullable: true })
   name: string;
 
