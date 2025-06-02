@@ -6,7 +6,7 @@ export class Notification {
   @Column() userId: number;
   @Column() type: string;
   @Column() message: string;
-  @Column() nftId: number;
+  @Column({ default: 1 }) nftId: number;
   @Column({ default: false }) read: boolean=false;
   @CreateDateColumn() createdAt: Date;
 }
