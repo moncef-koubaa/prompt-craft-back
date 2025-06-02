@@ -6,10 +6,10 @@ import {
   JoinColumn,
   CreateDateColumn,
   OneToMany,
-} from 'typeorm';
-import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { User } from '../../user/entities/user.entity';
-import { Auction } from '../../auction/entities/auction.entity';
+} from "typeorm";
+import { ObjectType, Field, Int } from "@nestjs/graphql";
+import { User } from "../../user/entities/user.entity";
+import { Auction } from "../../auction/entities/auction.entity";
 
 @ObjectType()
 @Entity()
@@ -23,11 +23,15 @@ export class Nft {
   name: string;
 
   @Field()
+  @Column({ default: "default title" })
+  title: string;
+
+  @Field({ nullable: true })
   @Column({ nullable: true })
   description: string;
 
   @Field()
-  @Column({ default: 'default title' })
+  @Column({ default: "default title" })
   title: string;
 
   @Field({ nullable: true })
@@ -40,7 +44,7 @@ export class Nft {
 
   @Field(() => User)
   @ManyToOne(() => User, (user) => user.ownedNfts)
-  @JoinColumn({ name: 'ownerId' })
+  @JoinColumn({ name: "ownerId" })
   owner: User;
 
   @Field(() => Int)
@@ -49,7 +53,7 @@ export class Nft {
 
   @Field(() => User)
   @ManyToOne(() => User, (user) => user.createdNfts)
-  @JoinColumn({ name: 'creatorId' })
+  @JoinColumn({ name: "creatorId" })
   creator: User;
 
   @Field(() => Int)
@@ -57,18 +61,18 @@ export class Nft {
   creatorId: number;
 
   @Field(() => [String], { nullable: true })
-  @Column('text', { array: true, default: [] })
+  @Column("text", { array: true, default: [] })
   tags?: string[];
 
   @Field(() => [Auction], { nullable: true })
   @OneToMany(() => Auction, (auction) => auction.nft)
   auctions?: Auction[];
 
-  @Field(() => Boolean, { defaultValue: false })
+  @Field()
   @Column({ default: false })
   isOnAuction: boolean;
 
-  @Field(() => Boolean, { defaultValue: false })
+  @Field()
   @Column({ default: false })
   isOnSale: boolean;
 
