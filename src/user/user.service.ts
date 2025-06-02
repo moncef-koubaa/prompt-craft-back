@@ -4,12 +4,15 @@ import { User } from "./entities/user.entity";
 import { FindOptionsWhere, Repository } from "typeorm";
 import { Auction } from "src/auction/entities/auction.entity";
 import { FrozenBalance } from "src/auction/entities/frozen-balance.entity";
+import { Nft } from "../nft/entities/nft.entity";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Nft)
+    private readonly nftRepository: Repository<Nft>,
     @InjectRepository(FrozenBalance)
     private frozenBalanceRepo: Repository<FrozenBalance>
   ) {}
@@ -134,5 +137,18 @@ export class UserService {
   async transferBalance(fromUserId: number, toUserId: number, amount: number) {
     await this.deductBalance(fromUserId, amount);
     await this.addBalance(toUserId, amount);
+  }
+  async getOwnedNfts(userId: number): Promise<Nft[]> {
+    return this.nftRepository.find({
+      where: { owner: { id: userId } },
+      relations: ["owner"],
+    });
+  }
+  async getEmail(userId: number): Promise<string> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+    return user.email;
   }
 }

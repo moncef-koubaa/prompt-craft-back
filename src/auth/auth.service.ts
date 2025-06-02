@@ -56,9 +56,11 @@ export class AuthService {
       username: user.username,
       sub: user.id,
       roles: user.roles,
+      email: user.email,
       emailVerified: user.emailVerified,
     };
-
+    console.log("payload fil aauth service ",payload);
+    console.log("access token in auth service ", this.jwtService.sign(payload));
     return {
       access_token: this.jwtService.sign(payload),
     };
