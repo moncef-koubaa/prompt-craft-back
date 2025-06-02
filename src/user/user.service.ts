@@ -4,6 +4,7 @@ import { User } from './entities/user.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { Auction } from 'src/auction/entities/auction.entity';
 import { FrozenBalance } from 'src/auction/entities/frozen-balance.entity';
+import { WsException } from '@nestjs/websockets';
 
 @Injectable()
 export class UserService {
@@ -76,7 +77,7 @@ export class UserService {
     const user = await this.userRepository.findOneBy({ id: userId });
     if (user != null) {
       if (user.balance < amount) {
-        throw new Error('Insufficient funds');
+        throw new WsException('Insufficient funds');
       }
       user.balance -= amount;
       await this.userRepository.save(user);
