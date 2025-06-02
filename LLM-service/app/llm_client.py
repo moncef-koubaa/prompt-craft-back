@@ -18,7 +18,7 @@ def generate_image(prompt):
 
 
     # 1) Replace with your actual API key
-    API_KEY = "AIzaSyBuHI7CJDg2WKlQSZ-PoJRGzcZx0ieFTTI"
+    API_KEY = "AIzaSyA67gnvLXQRYyq8IITrg5K2J6Kjy2SL-AY"
 
     # 2) Use the preview-image-generation endpoint
     URL = (
