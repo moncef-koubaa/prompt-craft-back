@@ -24,7 +24,9 @@ export class PlanService {
   }
 
   findAll() {
-    return this.planRepository.find();
+    return this.planRepository.find({
+      where: { isActive: true },
+    });
   }
 
   findOne(id: number) {
