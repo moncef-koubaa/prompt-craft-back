@@ -26,6 +26,7 @@ export class Nft {
   @Column({ default: "default title" })
   title: string;
 
+  @Field({ nullable: true })
   @Column({ nullable: true })
   description: string;
 
@@ -62,8 +63,11 @@ export class Nft {
   @JoinTable()
   auctions?: Auction[];
 
+  @Field()
   @Column({ default: false })
   isOnAuction: boolean;
+
+  @Field()
   @Column({ default: false })
   isOnSale: boolean;
 }

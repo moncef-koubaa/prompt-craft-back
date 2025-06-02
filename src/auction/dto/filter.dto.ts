@@ -9,7 +9,7 @@ export class FilterDto {
 
   @Field(() => Int, { nullable: true })
   @IsOptional()
-  limit: number = 8;
+  limit: number = 6;
 
   @Field({ nullable: true })
   @IsOptional()
