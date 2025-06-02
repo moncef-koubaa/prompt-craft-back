@@ -35,6 +35,11 @@
       return this.userService.getEmail(user.id);
     }
 
+    @Get('id')
+    async getUserId(@AuthedUser() user: User): Promise<number> {
+      return user.id;
+    }
+
     @Get('owned-nfts')
     async getOwnedNfts(@AuthedUser() user: User): Promise<Nft[]> {
       return this.userService.getOwnedNfts(user.id);
