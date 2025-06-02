@@ -80,7 +80,7 @@ export class AuctionService {
     const notification: NotificationDto = {
       nftId: dto.nftId,
       type: 'auctionStarted',
-      message: `${newAuction.id}`,
+      message: `Auction for NFT ${nft.name} has started.`,
       userId: nft.ownerId,
     };
     this.NotficationService.sendNotification(notification);
@@ -180,6 +180,15 @@ export class AuctionService {
         bidder: user,
       } as DeepPartial<Bid>);
       bid = await this.bidRepo.save(bid);
+
+      const notification: NotificationDto = {
+        nftId: auction.nftId,
+        type: 'newBid',
+        message: `${auction.id}`,
+        userId: bidderId,
+      };
+      this.NotficationService.sendNotification(notification);
+
       return bid;
     }, 1);
   }
@@ -231,6 +240,7 @@ export class AuctionService {
   //     }
   //   }
   // }
+
   async getBidders(auctionId: number) {
     const auction = await this.auctionRepo.findOne({
       where: { id: auctionId },
