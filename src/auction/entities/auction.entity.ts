@@ -5,8 +5,6 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  ManyToMany,
-  JoinTable,
 } from 'typeorm';
 import { Bid } from './bid.entity';
 import { JoinAuction } from './joinAuction.entity';
@@ -29,21 +27,21 @@ export class Auction {
   description: string;
 
   @Field(() => Int)
-  @Column()
+  @Column({ nullable: true })
   startingPrice: number;
 
   @Field(() => Int)
   @Column()
   nftId: number;
-  
+
   @Field(() => Int)
   @Column()
   ownerId: number;
-  
+
   @Field(() => Int, { nullable: true })
   @Column({ nullable: true })
   winnerId: number;
-  
+
   @Field(() => Int, { nullable: true })
   @Column({ nullable: true })
   maxBidAmount: number;

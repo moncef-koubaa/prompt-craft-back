@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Resource } from './resource.enum';
 
 @Entity()
 export class Plan {
@@ -14,8 +15,11 @@ export class Plan {
   @Column({ type: 'decimal' })
   price: number;
 
-  @Column()
-  tokenNumber: number;
+  @Column({ type: 'enum', enum: Resource, default: Resource.TOKEN })
+  resource: Resource;
+
+  @Column({ type: 'int', default: 1 })
+  quantity: number;
 
   @Column()
   isActive: boolean;
