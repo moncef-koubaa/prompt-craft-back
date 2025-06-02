@@ -3,7 +3,7 @@ import { User } from "src/user/entities/user.entity";
 
 export const AuthedUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
-    let payload: any;
+    let payload: Partial<User>;
     if (ctx.getType() === "ws") {
       const client = ctx.switchToWs().getClient();
       payload = client.user;
@@ -11,11 +11,13 @@ export const AuthedUser = createParamDecorator(
       const request = ctx.switchToHttp().getRequest();
       payload = request.user;
     }
+    console.log(payload);
     const user: User = {
-      id: payload.id,
-      username: payload.username,
-      roles: payload.roles,
-      emailVerified: payload.emailVerified,
+      id: payload.id || 0,
+      username: payload.username || '',
+      roles: payload.roles || [],
+      emailVerified: payload.emailVerified || false,
+        email: payload.email || '',
     } as User;
     return user;
   }

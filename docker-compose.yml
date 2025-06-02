@@ -39,9 +39,8 @@ services:
       - ./package.json:/app/package.json:z
       - ./nest-cli.json:/app/nest-cli.json:z
       - ./tsconfig.json:/app/tsconfig.json:z
-      - /app/node_modules
-      #- /app/node_modules
-    command: npm run start:dev
+
+    command: sh -c "npm install && npm run start:dev"
     depends_on:
       - db
 

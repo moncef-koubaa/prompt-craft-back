@@ -26,6 +26,10 @@ export class Nft {
   @Column({ nullable: true })
   description: string;
 
+  @Field()
+  @Column({ default: 'default title' })
+  title: string;
+
   @Field({ nullable: true })
   @Column({ nullable: true })
   imageUrl?: string;

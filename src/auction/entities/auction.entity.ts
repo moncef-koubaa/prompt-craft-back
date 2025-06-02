@@ -75,7 +75,7 @@ export class Auction {
   createdAt: Date;
 
   @Field(() => Date)
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   endTime: Date;
 
   @Field(() => [Bid], { nullable: true })
