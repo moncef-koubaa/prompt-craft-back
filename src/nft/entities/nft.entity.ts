@@ -23,12 +23,12 @@ export class Nft {
   name: string;
 
   @Field()
-  @Column({ nullable: true })
-  description: string;
-
-  @Field()
   @Column({ default: 'default title' })
   title: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  description: string;
 
   @Field({ nullable: true })
   @Column({ nullable: true })

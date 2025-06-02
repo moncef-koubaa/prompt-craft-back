@@ -20,6 +20,7 @@ import { PriorityMutex } from './priority-mutex';
 import { NftService } from 'src/nft/nft.service';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationDto } from 'src/notification/notification.dto';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class AuctionService {
@@ -80,7 +81,7 @@ export class AuctionService {
     const notification: NotificationDto = {
       nftId: dto.nftId,
       type: 'auctionStarted',
-      message: `${newAuction.id}`,
+      message: `Auction for NFT ${nft.name} has started.`,
       userId: nft.ownerId,
     };
     this.NotficationService.sendNotification(notification);
@@ -102,9 +103,9 @@ export class AuctionService {
     const auction = await this.auctionRepo.findOneBy({ id: auctionId });
     if (!auction) throw new BadRequestException('Auction not found');
 
-    if (auction.ownerId === user.id) {
-      throw new BadRequestException('You cannot join your own auction');
-    }
+    // if (auction.ownerId === user.id) {
+    //   throw new BadRequestException('You cannot join your own auction');
+    // }
 
     const existingJoin = await this.joinRepo.findOne({
       where: {
@@ -155,6 +156,9 @@ export class AuctionService {
       let auction = await this.auctionRepo.findOneBy({ id: dto.auctionId });
       if (!auction) throw new WsException('Auction not found');
       if (auction.isEnded) throw new WsException('Auction has ended');
+      if (auction.ownerId === bidderId) {
+        throw new WsException('You cannot bid on your own auction');
+      }
       const user = await this.userService.findOneBy({ id: bidderId });
       const userBalance = await this.userService.getBalance(bidderId);
       if (userBalance < dto.amount) {
@@ -180,6 +184,16 @@ export class AuctionService {
         bidder: user,
       } as DeepPartial<Bid>);
       bid = await this.bidRepo.save(bid);
+
+      const nft = await this.nftService.findOne(auction.nftId);
+      const notification: NotificationDto = {
+        nftId: auction.nftId,
+        type: `${user?.username} placed a bid for the NFT ${nft?.name}`,
+        message: `${auction.id}`,
+        userId: bidderId,
+      };
+      this.NotficationService.sendNotification(notification);
+
       return bid;
     }, 1);
   }
@@ -190,10 +204,16 @@ export class AuctionService {
       auction.isEnded = true;
       await this.auctionRepo.save(auction);
 
+      const winner = await this.userService.findOneBy({
+        id: auction.winnerId,
+      });
+      const nft = await this.nftService.findOne(auction.nftId);
+      const message = `Auction for NFT ${nft?.name} has ended. User ${winner?.username} has won with amount ${auction.maxBidAmount}.`;
+
       this.eventEmitter.emit('auction.ended', {
-        auctionId: auction.id,
+        nftId: nft?.id,
         winnerId: auction.winnerId,
-        amount: auction.maxBidAmount,
+        message: message,
       });
 
       // transfer NFT ownership
@@ -209,28 +229,29 @@ export class AuctionService {
     }, 1000);
   }
 
-  // @Cron('*/5 * * * *')
-  // async scheduleAuctionEnd() {
-  //   const now = new Date();
-  //   const in5Minutes = new Date(now.getTime() + 5 * 60 * 1000);
-  //   const auctions = await this.auctionRepo.find({
-  //     where: {
-  //       isEnded: false,
-  //       endTime: LessThanOrEqual(in5Minutes),
-  //     },
-  //   });
+  @Cron('*/5 * * * *')
+  async scheduleAuctionEnd() {
+    const now = new Date();
+    const in5Minutes = new Date(now.getTime() + 5 * 60 * 1000);
+    const auctions = await this.auctionRepo.find({
+      where: {
+        isEnded: false,
+        endTime: LessThanOrEqual(in5Minutes),
+      },
+    });
 
-  //   for (const auction of auctions) {
-  //     const timeLeft = auction.endTime.getTime() - now.getTime();
-  //     if (timeLeft > 0) {
-  //       setTimeout(async () => {
-  //         this.endAuction(auction);
-  //       }, timeLeft);
-  //     } else {
-  //       this.endAuction(auction);
-  //     }
-  //   }
-  // }
+    for (const auction of auctions) {
+      const timeLeft = auction.endTime.getTime() - now.getTime();
+      if (timeLeft > 0) {
+        setTimeout(async () => {
+          this.endAuction(auction);
+        }, timeLeft);
+      } else {
+        this.endAuction(auction);
+      }
+    }
+  }
+
   async getBidders(auctionId: number) {
     const auction = await this.auctionRepo.findOne({
       where: { id: auctionId },

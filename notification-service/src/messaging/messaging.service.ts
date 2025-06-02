@@ -25,7 +25,7 @@ export class MessagingService {
             .getMany();
         console.log("subs", subscribers);
         for (const sub of subscribers) {
-            if (sub.userId === userId) continue;
+            // if (sub.userId === userId) continue;
             const notif = await this.notifService.create({ userId: sub.userId,nftId, type, message });
             this.sseService.publish(sub.userId, notif);
         }

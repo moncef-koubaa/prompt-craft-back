@@ -15,11 +15,11 @@ export class NotificationService {
   @OnEvent('auction.ended')
   notifyParticipants(data: any) {
     // todo: change nft id
-    const { auctionId, winnerId, amount } = data;
+    const { nftId, winnerId, message } = data;
     const notification: NotificationDto = {
-      nftId: auctionId,
+      nftId: nftId,
       type: 'auctionEnded',
-      message: `Auction ${auctionId} has ended. Winner: User ${winnerId} with bid amount ${amount}.`,
+      message: message,
       userId: winnerId,
     };
     this.sendNotification(notification);
