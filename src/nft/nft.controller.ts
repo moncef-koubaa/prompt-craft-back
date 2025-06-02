@@ -11,6 +11,7 @@ import { NftService } from './nft.service';
 import { CreateNftDto } from './dto/create-nft.dto';
 import { UpdateNftDto } from './dto/update-nft.dto';
 import { AuthedUser } from 'src/decorator/authed-user.decorator.ts';
+import { User } from 'src/user/entities/user.entity';
 
 @Controller('nft')
 export class NftController {
@@ -24,8 +25,8 @@ export class NftController {
   }
 
   @Post('like/:id')
-  like(@Param('id') id: string) {
-    return this.nftService.likeNft(+id);
+  like(@Param('id') id: string, @AuthedUser() user: User) {
+    return this.nftService.likeNft(+id, user.id);
   }
 
   @Get()

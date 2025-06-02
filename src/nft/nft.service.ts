@@ -7,6 +7,7 @@ import { DeepPartial, Not, Repository } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Auction } from 'src/auction/entities/auction.entity';
 import { NotificationService } from 'src/notification/notification.service';
+import { NotificationDto } from 'src/notification/notification.dto';
 
 @Injectable()
 export class NftService {
@@ -113,12 +114,19 @@ export class NftService {
     }
   }
 
-  async likeNft(id: number) {
+  async likeNft(id: number, userId: number) {
     const nft = await this.nftRepository.findOneBy({ id });
     if (!nft) {
       throw new NotFoundException('NFT not found');
     }
     nft.likeCount++;
     await this.nftRepository.save(nft);
+    const notification: NotificationDto = {
+      nftId: id,
+      type: 'like',
+      message: `Nft ${nft.name} has been liked.`,
+      userId: userId,
+    };
+    this.notficationService.sendNotification(notification);
   }
 }

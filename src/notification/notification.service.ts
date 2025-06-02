@@ -19,7 +19,7 @@ export class NotificationService {
     const notification: NotificationDto = {
       nftId: auctionId,
       type: 'auctionEnded',
-      message: `Auction ${auctionId} has ended. Winner: User ${winnerId} with bid amount ${amount}.`,
+      message: `Auction has ended.`,
       userId: winnerId,
     };
     this.sendNotification(notification);
