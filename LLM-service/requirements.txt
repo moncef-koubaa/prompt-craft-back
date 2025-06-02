@@ -10,3 +10,5 @@ uuid
 langchain
 langchain-google-genai
 python-dotenv
+itsdangerous
+langchain-community
