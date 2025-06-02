@@ -17,6 +17,10 @@ export class PaymentService {
       throw new BadRequestException('Plan not found');
     }
 
+    if (!plan.isActive) {
+      throw new BadRequestException('Plan is not active');
+    }
+
     const session = await this.stripe.checkout.sessions.create({
       client_reference_id: customer.id.toString(),
       line_items: [
@@ -32,8 +36,9 @@ export class PaymentService {
         },
       ],
       mode: 'payment',
-      success_url: `http://localhost/success`,
-      cancel_url: `http://localhost/cancel`,
+
+      success_url: `${process.env.URL_BASE}/success`,
+      cancel_url: `${process.env.URL_BASE}/cancel`,
     });
 
     if (!session.url) {
@@ -51,11 +56,27 @@ export class PaymentService {
     );
 
     switch (event.type) {
-      case 'checkout.session.completed':
+      case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
+
+        const userId = parseInt(session.client_reference_id ?? '0');
+        const planId = parseInt(session.metadata?.planId ?? '0');
+
+        if (!userId || !planId) {
+          console.error('Missing userId or planId in webhook session');
+          return;
+        }
+
+        const plan = await this.planService.findOne(planId);
+        if (plan) {
+          console.error(`Plan with ID ${planId} not found`);
+        }
+
         break;
+      }
+
       default:
-        throw new BadRequestException('Unhandled event type');
+        throw new BadRequestException(`Unhandled event type: ${event.type}`);
     }
   }
 }

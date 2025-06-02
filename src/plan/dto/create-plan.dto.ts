@@ -1,4 +1,5 @@
 import { IsNotEmpty, Min } from 'class-validator';
+import { Resource } from '../entities/resource.enum';
 
 export class CreatePlanDto {
   @IsNotEmpty()
@@ -12,8 +13,11 @@ export class CreatePlanDto {
   price: number;
 
   @IsNotEmpty()
+  resource: Resource;
+
+  @IsNotEmpty()
   @Min(1)
-  tokenNumber: number;
+  quantity: number;
 
   @IsNotEmpty()
   isActive: boolean;

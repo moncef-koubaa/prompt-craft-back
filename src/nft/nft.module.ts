@@ -6,12 +6,12 @@ import { User } from 'src/user/entities/user.entity';
 import { Auction } from 'src/auction/entities/auction.entity';
 import { Nft } from './entities/nft.entity';
 import { NftResolver } from '../resolvers/nft';
-
+import { NotificationModule } from 'src/notification/notiffication.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Auction, Nft])],
+  imports: [TypeOrmModule.forFeature([User, Auction, Nft]), NotificationModule],
   controllers: [NftController],
-  providers: [NftService,NftResolver],
-  exports: [NftService,TypeOrmModule],
+  providers: [NftService, NftResolver],
+  exports: [NftService, TypeOrmModule],
 })
 export class NftModule {}
