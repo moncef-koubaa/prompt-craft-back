@@ -4,9 +4,8 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
-  ManyToMany,
-  JoinTable,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { User } from '../../user/entities/user.entity';
@@ -33,7 +32,7 @@ export class Nft {
 
   @Field(() => Int)
   @Column()
-  price: number;
+  price?: number;
 
   @Field(() => User)
   @ManyToOne(() => User, (user) => user.ownedNfts)
@@ -58,15 +57,22 @@ export class Nft {
   tags?: string[];
 
   @Field(() => [Auction], { nullable: true })
-  @ManyToMany(() => Auction, (auction) => auction.nft)
-  @JoinTable()
+  @OneToMany(() => Auction, (auction) => auction.nft)
   auctions?: Auction[];
 
+  @Field(() => Boolean, { defaultValue: false })
   @Column({ default: false })
   isOnAuction: boolean;
+
+  @Field(() => Boolean, { defaultValue: false })
   @Column({ default: false })
   isOnSale: boolean;
 
+  @Field(() => Date)
   @CreateDateColumn()
   mintedAt: Date;
+
+  @Field(() => Number, { defaultValue: 0 })
+  @Column({ default: 0 })
+  likeCount: number;
 }

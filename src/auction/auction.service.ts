@@ -14,12 +14,12 @@ import { PlaceBidDto } from './dto/place-bid.dto';
 import { log } from 'console';
 import { WsException } from '@nestjs/websockets';
 import { User } from 'src/user/entities/user.entity';
-import { Cron } from '@nestjs/schedule';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserService } from 'src/user/user.service';
 import { PriorityMutex } from './priority-mutex';
-import { Nft } from 'src/nft/entities/nft.entity';
 import { NftService } from 'src/nft/nft.service';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationDto } from 'src/notification/notification.dto';
 
 @Injectable()
 export class AuctionService {
@@ -32,7 +32,8 @@ export class AuctionService {
     private joinRepo: Repository<JoinAuction>,
     private readonly eventEmitter: EventEmitter2,
     private readonly userService: UserService,
-    private readonly nftService: NftService
+    private readonly nftService: NftService,
+    private readonly NotficationService: NotificationService
   ) {}
 
   private auctionLocks: Map<number, PriorityMutex> = new Map();
@@ -52,6 +53,9 @@ export class AuctionService {
     if (nft.owner.id !== user.id) {
       throw new ForbiddenException('You are not the owner of this NFT');
     }
+    if (nft.isOnSale) {
+      throw new BadRequestException('NFT is already on sale');
+    }
     if (nft.isOnAuction) {
       throw new BadRequestException('NFT is already on auction');
     }
@@ -66,7 +70,19 @@ export class AuctionService {
       maxBidAmount: dto.startingPrice,
       isEnded: false,
     });
-    return await this.auctionRepo.save(auction);
+
+    await this.nftService.makeOnAuction(dto.nftId);
+    const newAuction = await this.auctionRepo.save(auction);
+
+    const notification: NotificationDto = {
+      nftId: dto.nftId,
+      type: 'auctionStarted',
+      message: `${newAuction.id}`,
+      userId: nft.ownerId,
+    };
+    this.NotficationService.sendNotification(notification);
+
+    return newAuction;
   }
 
   async getAuction(auctionId: number) {
@@ -189,26 +205,26 @@ export class AuctionService {
     }, 1000);
   }
 
-  @Cron('*/5 * * * *')
-  async scheduleAuctionEnd() {
-    const now = new Date();
-    const in5Minutes = new Date(now.getTime() + 5 * 60 * 1000);
-    const auctions = await this.auctionRepo.find({
-      where: {
-        isEnded: false,
-        endTime: LessThanOrEqual(in5Minutes),
-      },
-    });
+  // @Cron('*/5 * * * *')
+  // async scheduleAuctionEnd() {
+  //   const now = new Date();
+  //   const in5Minutes = new Date(now.getTime() + 5 * 60 * 1000);
+  //   const auctions = await this.auctionRepo.find({
+  //     where: {
+  //       isEnded: false,
+  //       endTime: LessThanOrEqual(in5Minutes),
+  //     },
+  //   });
 
-    for (const auction of auctions) {
-      const timeLeft = auction.endTime.getTime() - now.getTime();
-      if (timeLeft > 0) {
-        setTimeout(async () => {
-          this.endAuction(auction);
-        }, timeLeft);
-      } else {
-        this.endAuction(auction);
-      }
-    }
-  }
+  //   for (const auction of auctions) {
+  //     const timeLeft = auction.endTime.getTime() - now.getTime();
+  //     if (timeLeft > 0) {
+  //       setTimeout(async () => {
+  //         this.endAuction(auction);
+  //       }, timeLeft);
+  //     } else {
+  //       this.endAuction(auction);
+  //     }
+  //   }
+  // }
 }
