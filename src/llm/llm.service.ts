@@ -34,8 +34,7 @@ export class LlmService {
       const filePath = `./src/assets/generated_image/${fileName}`;
       require("fs").writeFileSync(filePath, buffer);
       const imageUrl = `http://localhost:3000/generated-images/${fileName}`;
-      //   console.log("Image URL:", imageUrl);
-      await setTimeout(5000);
+        console.log("Image URL:", imageUrl);
 
       // const imageUrl = `http://localhost:3000/generated-images/1747003830177.png`;
       return imageUrl;
