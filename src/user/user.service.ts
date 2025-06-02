@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
-import { Auction } from 'src/auction/entities/auction.entity';
-import { FrozenBalance } from 'src/auction/entities/frozen-balance.entity';
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "./entities/user.entity";
+import { FindOptionsWhere, Repository } from "typeorm";
+import { Auction } from "src/auction/entities/auction.entity";
+import { FrozenBalance } from "src/auction/entities/frozen-balance.entity";
+import { Nft } from "../nft/entities/nft.entity";
 import { WsException } from '@nestjs/websockets';
 
 @Injectable()
@@ -11,6 +12,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Nft)
+    private readonly nftRepository: Repository<Nft>,
     @InjectRepository(FrozenBalance)
     private frozenBalanceRepo: Repository<FrozenBalance>
   ) {}
@@ -19,7 +22,7 @@ export class UserService {
     user.balance = 0;
     user.tokens = 0;
     user.emailVerified = false;
-    user.roles = ['user'];
+    user.roles = ["user"];
     const newUser = this.userRepository.create(user);
     return this.userRepository.save(newUser);
   }
@@ -41,10 +44,10 @@ export class UserService {
   async makeAdmin(username: string) {
     const user = await this.userRepository.findOneBy({ username });
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new BadRequestException("User not found");
     }
 
-    user.roles.push('admin');
+    user.roles.push("admin");
 
     const { password, ...userWithoutPassword } =
       await this.userRepository.save(user);
@@ -54,10 +57,10 @@ export class UserService {
   async revokeAdmin(username: string) {
     const user = await this.userRepository.findOneBy({ username });
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new BadRequestException("User not found");
     }
 
-    user.roles = user.roles.filter((role) => role !== 'admin');
+    user.roles = user.roles.filter((role) => role !== "admin");
 
     const { password, ...userWithoutPassword } =
       await this.userRepository.save(user);
@@ -67,7 +70,7 @@ export class UserService {
   async addBalance(userId: number, amount: number) {
     const user = await this.userRepository.findOneBy({ id: userId });
     if (user != null) {
-      user.balance += amount;
+      user.balance = Number(user.balance) + Number(amount);
       await this.userRepository.save(user);
       return user.balance;
     }
@@ -135,5 +138,18 @@ export class UserService {
   async transferBalance(fromUserId: number, toUserId: number, amount: number) {
     await this.deductBalance(fromUserId, amount);
     await this.addBalance(toUserId, amount);
+  }
+  async getOwnedNfts(userId: number): Promise<Nft[]> {
+    return this.nftRepository.find({
+      where: { owner: { id: userId } },
+      relations: ["owner"],
+    });
+  }
+  async getEmail(userId: number): Promise<string> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+    return user.email;
   }
 }

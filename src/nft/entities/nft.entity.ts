@@ -39,7 +39,6 @@ export class Nft {
 
   @Field(() => User)
   @ManyToOne(() => User, (user) => user.ownedNfts)
-  @JoinColumn({ name: "ownerId" })
   owner: User;
 
   @Field(() => Int)
@@ -48,7 +47,6 @@ export class Nft {
 
   @Field(() => User)
   @ManyToOne(() => User, (user) => user.createdNfts)
-  @JoinColumn({ name: "creatorId" })
   creator: User;
 
   @Field(() => Int)

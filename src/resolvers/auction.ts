@@ -1,7 +1,7 @@
 import { Resolver, Query, Mutation, Args } from "@nestjs/graphql";
 import { Auction } from "../auction/entities/auction.entity";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Like, MoreThan, Repository } from "typeorm";
+import { Int32, Like, MoreThan, Repository } from "typeorm";
 import { User } from "../user/entities/user.entity";
 import { Public } from "src/decorator/public.decorator";
 import { FilterDto } from "src/auction/dto/filter.dto";
@@ -85,11 +85,19 @@ export class AuctionResolver {
 
   @Public()
   @Query(() => Auction, { name: "getAuction" })
-  async getAuction(@Args("id") id: number): Promise<Auction> {
-    const auction = await this.auctionRepository.findOne({
-      where: { id },
-      relations: ["nft", "bids"],
-    });
+  async getAuction(@Args("id") id: string): Promise<Auction> {
+    const auctionId = parseInt(id, 10);
+    const auction = await this.auctionRepository
+      .createQueryBuilder("auction")
+      .leftJoinAndSelect("auction.nft", "nft")
+      .leftJoinAndSelect("auction.bids", "bids")
+      .leftJoinAndSelect("nft.owner", "owner")
+      .leftJoinAndSelect("nft.creator", "creator")
+      .leftJoinAndSelect("bids.bidder", "bidder")
+      .where("auction.id = :id", { id: auctionId })
+      .orderBy("bids.createdAt", "DESC")
+
+      .getOne();
     if (!auction) {
       throw new Error("Auction not found");
     }

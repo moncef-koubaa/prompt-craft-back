@@ -1,7 +1,13 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Auction } from './auction.entity';
-import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { User } from 'src/user/entities/user.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
+import { Auction } from "./auction.entity";
+import { ObjectType, Field, Int } from "@nestjs/graphql";
+import { User } from "src/user/entities/user.entity";
 
 @ObjectType()
 @Entity()
@@ -11,16 +17,20 @@ export class Bid {
   id: number;
 
   @Field(() => Int)
-  @ManyToOne(() => User, user => user.bids)
+  @ManyToOne(() => User, (user) => user.bids)
   @Column()
   bidderId: number;
+
+  @ManyToOne(() => User, (user) => user.bids, { eager: true })
+  @Field(() => User)
+  bidder: User;
 
   @Field(() => Int)
   @Column()
   amount: number;
 
   @Field(() => Auction)
-  @ManyToOne(() => Auction, auction => auction.bids)
+  @ManyToOne(() => Auction, (auction) => auction.bids)
   auction: Auction;
 
   @Field(() => Date)

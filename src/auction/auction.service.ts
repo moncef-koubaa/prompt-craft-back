@@ -8,7 +8,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Auction } from "./entities/auction.entity";
 import { Bid } from "./entities/bid.entity";
 import { JoinAuction } from "./entities/joinAuction.entity";
-import { LessThanOrEqual, Repository } from "typeorm";
+import { DeepPartial, LessThanOrEqual, Repository } from "typeorm";
 import { CreateAuctionDto } from "./dto/create-auction.dto";
 import { PlaceBidDto } from "./dto/place-bid.dto";
 import { log } from "console";
@@ -132,11 +132,11 @@ export class AuctionService {
 
   async placeBid(dto: PlaceBidDto, bidderId: number) {
     const lock = this.getLockForAuction(dto.auctionId);
-    await lock.runExclusive(async () => {
+    return await lock.runExclusive(async () => {
       let auction = await this.auctionRepo.findOneBy({ id: dto.auctionId });
       if (!auction) throw new WsException("Auction not found");
       if (auction.isEnded) throw new WsException("Auction has ended");
-
+      const user = await this.userService.findOneBy({ id: bidderId });
       const userBalance = await this.userService.getBalance(bidderId);
       if (userBalance < dto.amount) {
         throw new WsException("Insufficient funds");
@@ -154,13 +154,14 @@ export class AuctionService {
       auction.maxBidAmount = dto.amount;
       await this.auctionRepo.save(auction);
 
-      const bid = this.bidRepo.create({
+      let bid = this.bidRepo.create({
         auction,
         bidderId,
         amount: dto.amount,
-      });
-
-      return await this.bidRepo.save(bid);
+        bidder: user,
+      } as DeepPartial<Bid>);
+      bid = await this.bidRepo.save(bid);
+      return bid;
     }, 1);
   }
 
@@ -215,9 +216,9 @@ export class AuctionService {
   async getBidders(auctionId: number) {
     const auction = await this.auctionRepo.findOne({
       where: { id: auctionId },
-      relations: ['bids'],
+      relations: ["bids"],
     });
-    if (!auction) throw new NotFoundException('Auction not found');
+    if (!auction) throw new NotFoundException("Auction not found");
 
     return auction.bids.map((bid) => bid.bidderId);
   }
