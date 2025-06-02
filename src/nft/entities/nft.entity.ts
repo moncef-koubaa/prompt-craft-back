@@ -22,6 +22,7 @@ export class Nft {
   @Column()
   name: string;
 
+  @Field()
   @Column({ default: "default title" })
   title: string;
 

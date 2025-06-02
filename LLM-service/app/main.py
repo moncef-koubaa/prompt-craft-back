@@ -9,6 +9,8 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import LLMChain
 from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain.memory.chat_message_histories import ChatMessageHistory
+
 
 from app.llm_client  import generate_image as generate_image_client 
 import os
@@ -36,12 +38,13 @@ prompt = PromptTemplate(
 )
 
 @app.post("/generate-image", response_model=ImageResponse)
-def generate_image(request: ImageRequest):
-    session = request.session
+def generate_image(request: ImageRequest , r : Request):
+    session = r.session
     if "chat_history" not in session:
         session["chat_history"] = []  
     memory = ConversationBufferMemory(
-        chat_memory=ConversationBufferMemory.ChatMessageHistory.parse_obj({"messages": session["chat_history"]}),
+        chat_memory=ChatMessageHistory.parse_obj({"messages": session["chat_history"]})
+,
         memory_key="chat_history"
     )
 
