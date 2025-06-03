@@ -118,7 +118,7 @@ export class NftResolver {
   async getNft(@Args('id', { type: () => Int }) id: number): Promise<Nft> {
     const nft = await this.nftRepository.findOne({
       where: { id },
-      relations: ['owner', 'creator', 'Auctions'],
+      relations: ['owner', 'creator', 'auctions'],
     });
     if (!nft) {
       throw new Error('NFT not found');
