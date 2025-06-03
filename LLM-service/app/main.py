@@ -30,7 +30,7 @@ app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="easy-to-guess")
 
 llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-preview-image-generation",
-                             google_api_key="AIzaSyBuHI7CJDg2WKlQSZ-PoJRGzcZx0ieFTTI",
+                             google_api_key="AIzaSyANqemwsLITCIBNZDQ3RD47LgogB3UnlUs",
                              response_modalities=[1, 2])
 prompt = PromptTemplate(
     input_variables=["chat_history", "user_input"],
