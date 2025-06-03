@@ -96,6 +96,15 @@ export class NftService {
     }
   }
 
+  async makeNotListed(id: number) {
+    const nft = await this.nftRepository.findOneBy({ id });
+    if (nft) {
+      nft.isOnAuction = false;
+      nft.isOnSale = false;
+      return await this.nftRepository.save(nft);
+    }
+  }
+
   remove(id: number) {
     return this.nftRepository.delete(id).then((result) => {
       if (result.affected === 0) {
