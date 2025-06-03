@@ -218,6 +218,7 @@ export class AuctionService {
 
       // transfer NFT ownership
       await this.nftService.transferNft(auction.nftId, auction.winnerId);
+      await this.nftService.makeNotListed(auction.nftId);
 
       // transfer money to the owner
       await this.userService.unfreezeBidAmount(auction);
